@@ -48,5 +48,7 @@ http.interceptors.response.use(response => {
 console.log("环境:", import.meta.env.NODE_ENV);
 console.log("服务器:", import.meta.env.VUE_APP_SERVER);
 console.log("所有环境变量:", import.meta.env);
+
+export const  request=http;
 export default http;
 

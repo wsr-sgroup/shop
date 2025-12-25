@@ -10,50 +10,50 @@ import java.util.Map;
 public interface CommonService<T> {
     /**
      * 登录
-     * @param username
-     * @param password
-     * @return
+     * @param username 用户名
+     * @param password 密码
+     * @return 返回
      */
     CurrentUserDTO login(String username, String password);
 
     /**
      * 注册
-     * @param data
+     * @param data 日期
      */
 
     void register(JSONObject data);
 
     /**
      * 更新当前用户信息
-     * @param currentUserDTO
+     * @param currentUserDTO 当前
      */
 
     void updateCurrentUserInfo(CurrentUserDTO currentUserDTO);
 
     /**
      * 修改当前用户密码
-     * @param updatePassword
+     * @param updatePassword 更新
      */
 
     void updateCurrentUserPassword(UpdatePasswordDTO updatePassword);
 
     /**
      * 重置密码
-     * @param id
+     * @param id id
      */
     void resetPassword(Integer id);
 
     /**
      * 忘记密码
-     * @param retrievePasswordDTO
+     * @param retrievePasswordDTO 忘记
      */
 
     void retrievePassword(RetrievePasswordDTO retrievePasswordDTO);
 
     /**
      * 查询当前用户信息
-     * @param id
-     * @return
+     * @param id id
+     * @return 返回
      */
 
     T selectById(Integer id);
