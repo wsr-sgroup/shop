@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.platform.mapper.ProductMapper">
+
+  <resultMap id="ProductResultMap" type="com.project.platform.entity.Product">
+    <id column="id" property="id"/>
+    <result column="sku" property="sku"/>
+    <result column="name" property="name"/>
+    <result column="subtitle" property="subtitle"/>
+    <result column="description" property="description"/>
+    <result column="price" property="price"/>
+    <result column="original_price" property="originalPrice"/>
+    <result column="cost_price" property="costPrice"/>
+    <result column="stock" property="stock"/>
+    <result column="stock_low_threshold" property="stockLowThreshold"/>
+    <result column="main_image" property="mainImage"/>
+    <result column="image_gallery" property="imageGallery"/>
+    <result column="specifications" property="specifications"/>
+    <result column="series" property="series"/>
+    <result column="model" property="model"/>
+    <result column="is_on_sale" property="isOnSale"/>
+    <result column="created_at" property="createdAt"/>
+    <result column="updated_at" property="updatedAt"/>
+  </resultMap>
+
+  <insert id="insert" parameterType="com.project.platform.entity.Product" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO products
+    (sku, name, subtitle, description, price, original_price, cost_price,
+     stock, stock_low_threshold, main_image, image_gallery, specifications,
+     series, model, is_on_sale, created_at, updated_at)
+    VALUES
+    (#{sku}, #{name}, #{subtitle}, #{description}, #{price}, #{originalPrice}, #{costPrice},
+     #{stock}, #{stockLowThreshold}, #{mainImage}, #{imageGallery}, #{specifications},
+     #{series}, #{model}, #{isOnSale}, #{createdAt}, #{updatedAt})
+  </insert>
+
+  <update id="update" parameterType="com.project.platform.entity.Product">
+    UPDATE products
+    <set>
+      <if test="sku != null">sku = #{sku},</if>
+      <if test="name != null">name = #{name},</if>
+      <if test="subtitle != null">subtitle = #{subtitle},</if>
+      <if test="description != null">description = #{description},</if>
+      <if test="price != null">price = #{price},</if>
+      <if test="originalPrice != null">original_price = #{originalPrice},</if>
+      <if test="costPrice != null">cost_price = #{costPrice},</if>
+      <if test="stock != null">stock = #{stock},</if>
+      <if test="stockLowThreshold != null">stock_low_threshold = #{stockLowThreshold},</if>
+      <if test="mainImage != null">main_image = #{mainImage},</if>
+      <if test="imageGallery != null">image_gallery = #{imageGallery},</if>
+      <if test="specifications != null">specifications = #{specifications},</if>
+      <if test="series != null">series = #{series},</if>
+      <if test="model != null">model = #{model},</if>
+      <if test="isOnSale != null">is_on_sale = #{isOnSale},</if>
+      updated_at = #{updatedAt}
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById" parameterType="int">
+    DELETE FROM products WHERE id = #{id}
+  </delete>
+
+  <delete id="deleteByIds" parameterType="list">
+    DELETE FROM products WHERE id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+  </delete>
+
+  <select id="selectById" resultMap="ProductResultMap" parameterType="int">
+    SELECT * FROM products WHERE id = #{id}
+  </select>
+
+  <select id="selectBySku" resultMap="ProductResultMap" parameterType="string">
+    SELECT * FROM products WHERE sku = #{sku} LIMIT 1
+  </select>
+
+  <select id="selectPage" resultMap="ProductResultMap">
+    SELECT * FROM products
+    <where>
+      <if test="name != null and name != ''">AND name LIKE CONCAT('%',#{name},'%')</if>
+      <if test="sku != null and sku != ''">AND sku = #{sku}</if>
+      <if test="series != null and series != ''">AND series = #{series}</if>
+      <if test="isOnSale != null">AND is_on_sale = #{isOnSale}</if>
+    </where>
+    ORDER BY created_at DESC
+    LIMIT #{offset}, #{pageSize}
+  </select>
+
+  <select id="count" resultType="int">
+    SELECT COUNT(1) FROM products
+    <where>
+      <if test="name != null and name != ''">AND name LIKE CONCAT('%',#{name},'%')</if>
+      <if test="sku != null and sku != ''">AND sku = #{sku}</if>
+      <if test="series != null and series != ''">AND series = #{series}</if>
+      <if test="isOnSale != null">AND is_on_sale = #{isOnSale}</if>
+    </where>
+  </select>
+
+</mapper>

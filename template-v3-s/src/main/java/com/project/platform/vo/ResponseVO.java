@@ -1,9 +1,16 @@
 package com.project.platform.vo;
 
-public class ResponseVO<T> {
+import java.io.Serializable;
+
+public class ResponseVO<T> implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private int code;
     private String msg;
     private T data;
+
+    public ResponseVO() {
+    }
 
     public ResponseVO(int code, String msg, T data) {
         this.code = code;
@@ -11,18 +18,29 @@ public class ResponseVO<T> {
         this.data = data;
     }
 
-    public static ResponseVO ok() {
-        return new ResponseVO(200, "操作成功", null);
+    public static <T> ResponseVO<T> ok() {
+        return new ResponseVO<>(200, "操作成功", null);
     }
 
-    public static ResponseVO ok(Object data) {
-        return new ResponseVO(200, "操作成功", data);
+    public static <T> ResponseVO<T> ok(T data) {
+        return new ResponseVO<>(200, "操作成功", data);
     }
 
-    public static ResponseVO fail(int code, Object data) {
-        return new ResponseVO(code, "操作失败", data);
+    public static <T> ResponseVO<T> success() {
+        return ok();
     }
 
+    public static <T> ResponseVO<T> success(T data) {
+        return ok(data);
+    }
+
+    public static <T> ResponseVO<T> fail(int code, T data) {
+        return new ResponseVO<>(code, "操作失败", data);
+    }
+
+    public static <T> ResponseVO<T> fail(int code, String msg, T data) {
+        return new ResponseVO<>(code, msg, data);
+    }
 
     public int getCode() {
         return code;
@@ -40,7 +58,7 @@ public class ResponseVO<T> {
         this.msg = msg;
     }
 
-    public Object getData() {
+    public T getData() {
         return data;
     }
 
