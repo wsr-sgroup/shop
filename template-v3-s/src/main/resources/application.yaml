@@ -6,9 +6,9 @@ spring:
     allow-circular-references: true #允许循环引用
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/templatev3_s?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost:3306/templatev3_s?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useLegacyDatetimeCode=false&zeroDateTimeBehavior=convertToNull
     username: root
-    password: 041231
+    password: cy420618  #这里注意要改成自己的mysql root用户密码
   servlet:
     multipart:
       max-file-size: 100MB # 文件上传大小限制，设置最大值，不能超过该值，否则报错
@@ -34,5 +34,3 @@ files:
   uploads:
     path: uploads/
     baseUrl: http://localhost:1000/file
-
-

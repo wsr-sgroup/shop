@@ -13,12 +13,10 @@ public class PageVO<T> {
     int pageSize;
 
     public void setPageNum(int pageNum) {
-    pageNum = this.pageNum;
+        this.pageNum = pageNum;
     }
     public void setPageSize(int pageSize) {
-    pageSize = this.pageSize;
+        this.pageSize = pageSize;
     }
     
 }
-
-
