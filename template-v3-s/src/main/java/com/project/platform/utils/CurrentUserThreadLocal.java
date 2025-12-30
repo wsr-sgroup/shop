@@ -29,4 +29,12 @@ public class CurrentUserThreadLocal {
     public static CurrentUserDTO getCurrentUser() {
         return CURRENT_USER_THREAD_LOCAL.get();
     }
+
+    /**
+     * 获取当前用户ID
+     */
+    public static Integer getCurrentUserId() {
+        CurrentUserDTO currentUser = CURRENT_USER_THREAD_LOCAL.get();
+        return currentUser != null ? currentUser.getId() : null;
+    }
 }

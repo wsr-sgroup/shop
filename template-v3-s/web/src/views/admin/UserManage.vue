@@ -91,7 +91,7 @@
 
 <script setup>
 import { ref, toRaw } from 'vue'
-import {request} from '@/utils/http.js'
+import request from '@/utils/http.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
     //搜索条件

@@ -1,0 +1,21 @@
+{
+  "addressId": 69,
+  "paymentMethod": "alipay",
+  "buyerNote": "请在工作日发货，谢谢",
+  "invoiceNeeded": 1,
+  "invoiceTitle": "张三",
+  "orderItems": [
+    {
+      "productId": 1001,
+      "quantity": 1,
+      "unitPrice": 999.99,
+      "productSpec": "{\"cpu\":\"Intel i7-1360P\",\"ram\":\"16GB\",\"storage\":\"512GB\",\"color\":\"黑色\"}"
+    },
+    {
+      "productId": 1005,
+      "quantity": 2,
+      "unitPrice": 199.99,
+      "productSpec": "{\"color\":\"石墨黑\"}"
+    }
+  ]
+}

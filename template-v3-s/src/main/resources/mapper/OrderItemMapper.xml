@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.platform.mapper.OrderItemMapper">
+    <!-- 基本列 -->
+    <sql id="orderItemColumns">
+        id, order_id, order_no, product_id, product_name, product_image, product_specifications, quantity, unit_price, item_amount, created_at
+    </sql>
+
+    <!-- 根据ID查询订单项 -->
+    <select id="selectById" resultType="com.project.platform.entity.OrderItem">
+        SELECT <include refid="orderItemColumns"/> FROM order_items WHERE id = #{id}
+    </select>
+
+    <!-- 根据订单ID查询订单项 -->
+    <select id="selectByOrderId" resultType="com.project.platform.entity.OrderItem">
+        SELECT <include refid="orderItemColumns"/> FROM order_items WHERE order_id = #{orderId} ORDER BY id ASC
+    </select>
+
+    <!-- 根据订单编号查询订单项 -->
+    <select id="selectByOrderNo" resultType="com.project.platform.entity.OrderItem">
+        SELECT <include refid="orderItemColumns"/> FROM order_items WHERE order_no = #{orderNo} ORDER BY id ASC
+    </select>
+
+    <!-- 插入订单项 -->
+    <insert id="insert" parameterType="com.project.platform.entity.OrderItem" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO order_items
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="orderId != null">order_id,</if>
+            <if test="orderNo != null">order_no,</if>
+            <if test="productId != null">product_id,</if>
+            <if test="productName != null">product_name,</if>
+            <if test="productImage != null">product_image,</if>
+            <if test="productSpecifications != null">product_specifications,</if>
+            <if test="quantity != null">quantity,</if>
+            <if test="unitPrice != null">unit_price,</if>
+            <if test="totalPrice != null">item_amount,</if>
+            <if test="createdAt != null">created_at,</if>
+
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="orderId != null">#{orderId},</if>
+            <if test="orderNo != null">#{orderNo},</if>
+            <if test="productId != null">#{productId},</if>
+            <if test="productName != null">#{productName},</if>
+            <if test="productImage != null">#{productImage},</if>
+            <if test="productSpecifications != null">#{productSpecifications},</if>
+            <if test="quantity != null">#{quantity},</if>
+            <if test="unitPrice != null">#{unitPrice},</if>
+            <if test="totalPrice != null">#{totalPrice},</if>
+            <if test="createdAt != null">#{createdAt},</if>
+
+        </trim>
+    </insert>
+
+    <!-- 批量插入订单项 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO order_items (order_id, order_no, product_id, product_name, product_image, product_specifications, quantity, unit_price, item_amount, created_at)
+        VALUES
+        <foreach collection="orderItems" item="item" separator=",">
+            (#{item.orderId}, #{item.orderNo}, #{item.productId}, #{item.productName}, #{item.productImage}, #{item.productSpecifications}, #{item.quantity}, #{item.unitPrice}, #{item.totalPrice}, #{item.createdAt})
+        </foreach>
+    </insert>
+
+    <!-- 根据ID更新订单项 -->
+    <update id="updateById" parameterType="com.project.platform.entity.OrderItem">
+        UPDATE order_items
+        <set>
+            <if test="orderId != null">order_id = #{orderId},</if>
+            <if test="orderNo != null">order_no = #{orderNo},</if>
+            <if test="productId != null">product_id = #{productId},</if>
+            <if test="productName != null">product_name = #{productName},</if>
+            <if test="productImage != null">product_image = #{productImage},</if>
+            <if test="productSpecifications != null">product_specifications = #{productSpecifications},</if>
+            <if test="quantity != null">quantity = #{quantity},</if>
+            <if test="unitPrice != null">unit_price = #{unitPrice},</if>
+            <if test="totalPrice != null">item_amount = #{totalPrice},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据订单ID删除订单项 -->
+    <delete id="deleteByOrderId">
+        DELETE FROM order_items WHERE order_id = #{orderId}
+    </delete>
+
+    <!-- 根据订单编号删除订单项 -->
+    <delete id="deleteByOrderNo">
+        DELETE FROM order_items WHERE order_no = #{orderNo}
+    </delete>
+</mapper>

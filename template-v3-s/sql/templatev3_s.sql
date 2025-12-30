@@ -14,8 +14,8 @@
  Date: 26/12/2024 00:17:51
 */
 
-SET NAMES utf8mb4;  --字符集
-SET FOREIGN_KEY_CHECKS = 0; --关闭外键约束检查
+SET NAMES utf8mb4;  -- 字符集
+SET FOREIGN_KEY_CHECKS = 0; -- 关闭外键约束检查
 
 -- ----------------------------
 -- 管理员表

@@ -21,7 +21,8 @@ public class SpringMvcConfig implements WebMvcConfigurer {
                         "/common/login",
                         "/common/register",
                         "/common/retrievePassword",
-                        "/file/**"
+                        "/file/**",
+                        "/error"
                 );
     }
 }
