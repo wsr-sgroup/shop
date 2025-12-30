@@ -42,6 +42,12 @@ function getRoutes() {
                     name:'user',
                     component:() =>
                         import ('../views/admin/UserManage.vue')
+                },
+                {
+                    path: '/admin/product',
+                    name: 'AdminProduct',
+                    component: () => import('@/views/admin/ProductManage.vue'),
+                    meta: { title: '商品管理' }
                 }
             ]
         },

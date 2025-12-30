@@ -1,5 +1,14 @@
 package com.project.platform.controller;
 
+import org.springframework.beans.BeanUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.alibaba.fastjson2.JSONObject;
 import com.project.platform.dto.CurrentUserDTO;
 import com.project.platform.dto.LoginDTO;
@@ -11,9 +20,8 @@ import com.project.platform.service.CommonService;
 import com.project.platform.utils.CurrentUserThreadLocal;
 import com.project.platform.utils.JwtUtils;
 import com.project.platform.vo.ResponseVO;
+
 import jakarta.annotation.Resource;
-import org.springframework.beans.BeanUtils;
-import org.springframework.web.bind.annotation.*;
 
 /**
  * 通用
@@ -114,11 +122,15 @@ public class CommonController {
      */
     @GetMapping("currentUser")
     public ResponseVO<CurrentUserDTO> getCurrentUser() {
-        Integer userId = CurrentUserThreadLocal.getCurrentUser().getId();
-        CommonService commonService = getCommonService(CurrentUserThreadLocal.getCurrentUser().getType());
+        CurrentUserDTO currentUser = CurrentUserThreadLocal.getCurrentUser();
+        if (currentUser == null) {
+            // 如果没有登录，返回未认证错误
+            return ResponseVO.fail(401, "用户未登录", null);
+        }
+        CommonService commonService = getCommonService(currentUser.getType());
         CurrentUserDTO currentUserDTO = new CurrentUserDTO();
-        BeanUtils.copyProperties(commonService.selectById(userId), currentUserDTO);
-        currentUserDTO.setType(CurrentUserThreadLocal.getCurrentUser().getType());
+        BeanUtils.copyProperties(commonService.selectById(currentUser.getId()), currentUserDTO);
+        currentUserDTO.setType(currentUser.getType());
         return ResponseVO.ok(currentUserDTO);
     }
 
