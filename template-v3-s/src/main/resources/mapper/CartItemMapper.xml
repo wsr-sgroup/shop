@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.platform.mapper.CartItemMapper">
+
+    <!-- 查询购物车项VO（关联商品表） -->
+    <select id="selectCartItemVOByCartId" resultType="com.project.platform.vo.CartItemVO">
+        SELECT
+            ci.*,
+            p.name AS product_name,
+            p.image AS product_image,
+            p.specifications AS product_specs,
+            p.stock AS product_stock
+        FROM
+            cart_item ci
+        LEFT JOIN
+            product p ON ci.product_id = p.id
+        WHERE
+            ci.cart_id = #{cartId}
+    </select>
+
+    <!-- 根据购物车项ID和用户ID查询 -->
+    <select id="selectByIdAndUserId" resultType="com.project.platform.entity.CartItem">
+        SELECT
+            *
+        FROM
+            cart_item ci
+        LEFT JOIN
+            cart c ON ci.cart_id = c.id
+        WHERE
+            ci.id = #{id}
+            AND c.user_id = #{userId}
+    </select>
+
+    <!-- 更新购物车项选中状态 -->
+    <update id="updateSelectedStatus">
+        UPDATE cart_item
+        SET selected = #{selected}
+        WHERE id = #{id}
+    </update>
+
+</mapper>
