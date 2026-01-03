@@ -46,12 +46,22 @@
             >
             </el-input>
           </el-form-item>
-          <el-form-item label="昵称" prop="nickname"
-                        :rules="[{required:true,message:'请输入昵称',trigger:[ 'blur','change']}]">
+          <el-form-item label="电话" prop="phone"
+                        :rules="[{required:true,message:'请输入电话',trigger:[ 'blur','change']}]">
             <el-input
                 style="width: 180px"
-                placeholder="请输入昵称"
-                v-model.trim="formData.nickname"
+                placeholder="请输入电话"
+                v-model.trim="formData.phone"
+                clearable
+            >
+            </el-input>
+          </el-form-item>
+          <el-form-item label="邮箱" prop="email"
+                        :rules="[{required:true,message:'请输入邮箱',trigger:[ 'blur','change']}]">
+            <el-input
+                style="width: 180px"
+                placeholder="请输入邮箱"
+                v-model.trim="formData.email"
                 clearable
             >
             </el-input>
@@ -81,9 +91,10 @@ const formRef = ref(null);
 const formData = ref({
   type: 'USER',
   username: '',
-  nickname: '',
   avatarUrl: '',
-  password: ''
+  password: '',
+  phone: '',
+  email: ''
 });
 
 const rules = ref({
@@ -101,14 +112,11 @@ const submitForm = () => {
       return
     }
     http.put("/common/register", formData.value).then(res => {
-      if (!res) {
-        return
-      }
       ElMessage({
         message: "注册成功，正在跳转",
         type: "success"
       });
-      router.push({path: "/login"})
+      router.push("/login")
     });
   });
 }

@@ -10,7 +10,7 @@
           ></el-image>
           <div class="thumbnail-list">
             <el-image
-              v-for="(image, index) in product.images"
+              v-for="(image, index) in imageList"
               :key="index"
               :src="image"
               class="thumbnail"
@@ -30,7 +30,7 @@
           <div class="product-meta">
             <div class="meta-item">
               <span class="label">商品编号：</span>
-              <span class="value">{{ product.code }}</span>
+              <span class="value">{{ product.sku }}</span>
             </div>
             <div class="meta-item">
               <span class="label">库存状态：</span>
@@ -41,11 +41,11 @@
           <div class="product-specs">
             <div class="spec-item">
               <span class="label">处理器：</span>
-              <span class="value">{{ product.processor }}</span>
+              <span class="value">{{ product.cpu }}</span>
             </div>
             <div class="spec-item">
               <span class="label">内存：</span>
-              <span class="value">{{ product.memory }}</span>
+              <span class="value">{{ product.ram }}</span>
             </div>
             <div class="spec-item">
               <span class="label">存储：</span>
@@ -53,11 +53,11 @@
             </div>
             <div class="spec-item">
               <span class="label">显卡：</span>
-              <span class="value">{{ product.graphics }}</span>
+              <span class="value">{{ product.gpu }}</span>
             </div>
             <div class="spec-item">
               <span class="label">屏幕：</span>
-              <span class="value">{{ product.display }}</span>
+              <span class="value">{{ product.screenSize }}英寸</span>
             </div>
           </div>
           
@@ -67,7 +67,7 @@
               <el-input-number 
                 v-model="quantity" 
                 :min="1" 
-                :max="product.stock"
+                :max="Math.max(1, product.stock)"
                 size="large"
               />
             </div>
@@ -102,13 +102,12 @@
         </el-tab-pane>
         <el-tab-pane label="规格参数" name="specs">
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="处理器">{{ product.processor }}</el-descriptions-item>
-            <el-descriptions-item label="内存">{{ product.memory }}</el-descriptions-item>
+            <el-descriptions-item label="处理器">{{ product.cpu }}</el-descriptions-item>
+            <el-descriptions-item label="内存">{{ product.ram }}</el-descriptions-item>
             <el-descriptions-item label="存储">{{ product.storage }}</el-descriptions-item>
-            <el-descriptions-item label="显卡">{{ product.graphics }}</el-descriptions-item>
-            <el-descriptions-item label="屏幕">{{ product.display }}</el-descriptions-item>
-            <el-descriptions-item label="操作系统">{{ product.os }}</el-descriptions-item>
-            <el-descriptions-item label="重量">{{ product.weight }}</el-descriptions-item>
+            <el-descriptions-item label="显卡">{{ product.gpu }}</el-descriptions-item>
+            <el-descriptions-item label="屏幕">{{ product.screenSize }}英寸</el-descriptions-item>
+            <el-descriptions-item label="重量">{{ product.weight }}kg</el-descriptions-item>
           </el-descriptions>
         </el-tab-pane>
       </el-tabs>
@@ -117,9 +116,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import http from '@/utils/http.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -135,62 +135,112 @@ const activeTab = ref('description')
 
 // 商品信息
 const product = ref({
-  id: 1,
-  name: '联想ThinkPad X1 Carbon 2023',
-  price: '12999.00',
-  code: 'X1CARBON2023',
-  stock: 100,
-  processor: 'Intel Core i7-1365U',
-  memory: '16GB LPDDR5',
-  storage: '512GB SSD',
-  graphics: 'Intel Iris Xe',
-  display: '14英寸 2.8K OLED触摸屏',
-  os: 'Windows 11 家庭版',
-  weight: '约1.12kg',
-  images: [
-    '@/assets/products/x1carbon_1.jpg',
-    '@/assets/products/x1carbon_2.jpg',
-    '@/assets/products/x1carbon_3.jpg'
-  ],
-  description: `<p>ThinkPad X1 Carbon 2023款是联想最新推出的高端商务笔记本电脑，采用碳纤维机身设计，轻至1.12kg，薄至14.9mm，
-                  是一款集便携性与性能于一体的理想商务伴侣。</p>
-                <p>搭载第13代英特尔酷睿处理器，性能相较上一代提升显著，无论是日常办公还是复杂任务处理都能轻松应对。
-                  配备14英寸2.8K OLED触摸屏，支持杜比视界HDR，色彩表现更加出色。</p>`
+  id: '',
+  name: '',
+  price: '',
+  sku: '',
+  stock: 0,
+  cpu: '',
+  ram: '',
+  storage: '',
+  gpu: '',
+  screenSize: '',
+  weight: '',
+  mainImage: '',
+  imageGallery: '',
+  description: ''
+})
+
+// 图片列表（从imageGallery解析或使用默认图片）
+const imageList = computed(() => {
+  if (product.value.imageGallery) {
+    try {
+      const images = JSON.parse(product.value.imageGallery)
+      return Array.isArray(images) ? images : []
+    } catch (e) {
+      console.error('解析图片列表失败:', e)
+      return []
+    }
+  }
+  // 如果没有图片列表，使用主图或默认图片
+  return product.value.mainImage ? [product.value.mainImage] : []
 })
 
 // 立即购买
 const buyNow = () => {
-  ElMessage.info('立即购买功能待实现')
   // 应该跳转到订单确认页面
+  router.push({
+    path: '/checkout',
+    query: {
+      productId: product.value.id,
+      quantity: quantity.value
+    }
+  })
 }
 
 // 加入购物车
 const addToCart = () => {
-  ElMessage.success(`已将 ${quantity.value} 件商品添加到购物车`)
-  // 应该调用后端API将商品添加到购物车
+  // 检查用户是否已登录
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+  if (!currentUser || !currentUser.id) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+  
+  // 调用后端API将商品添加到购物车
+  http.post('/api/cart/add', {
+    userId: currentUser.id,
+    productId: product.value.id,
+    quantity: quantity.value
+  }).then(res => {
+    if (res && res.code === 200) {
+      ElMessage.success(`已将 ${quantity.value} 件商品添加到购物车`)
+    } else {
+      ElMessage.error(res ? res.msg : '添加购物车失败')
+    }
+  }).catch(error => {
+    ElMessage.error('请求添加购物车出错')
+    console.error(error)
+  })
+}
+
+// 获取商品详情
+const getProductDetail = (id) => {
+  http.get(`/product/${id}`).then(res => {
+    console.log('商品详情响应:', res)
+    if (res && res.code === 200) {
+      product.value = res.data
+      // 设置默认显示第一张图片
+      if (imageList.value.length > 0) {
+        currentImage.value = imageList.value[0]
+      }
+    } else {
+      ElMessage.error('获取商品详情失败')
+    }
+  }).catch(error => {
+    ElMessage.error('请求商品详情出错')
+    console.error(error)
+  })
 }
 
 onMounted(() => {
   // 根据路由参数获取商品ID，并请求商品详情
   const productId = route.params.id
   console.log('获取商品详情，商品ID:', productId)
-  
-  // 设置默认显示第一张图片
-  if (product.value.images && product.value.images.length > 0) {
-    currentImage.value = product.value.images[0]
-  }
+  getProductDetail(productId)
 })
 </script>
 
 <style scoped>
 .product-detail {
   padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #00dbde 0%, #fc00ff 100%);
   min-height: 100vh;
 }
 
 .image-gallery {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #00dbde 0%, #fc00ff 100%);
   padding: 20px;
   border-radius: 15px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -240,7 +290,7 @@ onMounted(() => {
   font-size: 28px;
   margin-bottom: 15px;
   color: #333;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #00dbde 0%, #fc00ff 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -252,7 +302,7 @@ onMounted(() => {
   color: #ff6600;
   font-weight: bold;
   margin-bottom: 25px;
-  background: linear-gradient(90deg, #ff6600 0%, #ff3366 100%);
+  background: linear-gradient(90deg, #00dbde 0%, #fc00ff 100%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

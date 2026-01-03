@@ -27,4 +27,9 @@ public interface CartItemMapper extends BaseMapper<CartItem> {
      * 更新购物车项选中状态
      */
     int updateSelectedStatus(@Param("id") Integer cartItemId, @Param("selected") boolean selected);
+
+    /**
+     * 根据购物车ID和商品ID查询购物车项
+     */
+    CartItem selectByCartIdAndProductId(@Param("cartId") Integer cartId, @Param("productId") Integer productId);
 }

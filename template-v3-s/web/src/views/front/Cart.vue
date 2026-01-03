@@ -14,21 +14,21 @@
         <template #default="scope">
           <div class="product-info-cell">
             <el-image 
-              :src="scope.row.product.image || '@/assets/default-product.jpg'" 
+              :src="scope.row.productImage || '@/assets/default-product.jpg'" 
               class="product-thumb" 
               fit="cover"
             ></el-image>
             <div class="product-details">
-              <div class="product-name">{{ scope.row.product.name }}</div>
-              <div class="product-specs">{{ scope.row.specifications }}</div>
+              <div class="product-name">{{ scope.row.productName }}</div>
+              <div class="product-specs">{{ scope.row.productSpecs }}</div>
             </div>
           </div>
         </template>
       </el-table-column>
       
-      <el-table-column prop="product.price" label="单价" width="120">
+      <el-table-column prop="unitPrice" label="单价" width="120">
         <template #default="scope">
-          ¥{{ scope.row.product.price }}
+          ¥{{ scope.row.unitPrice }}
         </template>
       </el-table-column>
       
@@ -37,7 +37,7 @@
           <el-input-number 
             v-model="scope.row.quantity" 
             :min="1" 
-            :max="scope.row.product.stock"
+            :max="scope.row.productStock"
             @change="updateQuantity(scope.row)"
             size="small"
           />
@@ -46,7 +46,7 @@
       
       <el-table-column label="小计" width="120">
         <template #default="scope">
-          <span class="subtotal">¥{{ (scope.row.product.price * scope.row.quantity).toFixed(2) }}</span>
+          <span class="subtotal">¥{{ (scope.row.unitPrice * scope.row.quantity).toFixed(2) }}</span>
         </template>
       </el-table-column>
       
@@ -86,39 +86,15 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import http from '@/utils/http.js'
 
 const router = useRouter()
 
 // 购物车项目
-const cartItems = ref([
-  {
-    id: 1,
-    product: {
-      id: 1,
-      name: '联想ThinkPad X1 Carbon 2023',
-      price: 12999.00,
-      stock: 100,
-      image: ''
-    },
-    specifications: '16GB+512GB SSD',
-    quantity: 1
-  },
-  {
-    id: 2,
-    product: {
-      id: 2,
-      name: '联想拯救者Y7000P 2023',
-      price: 9999.00,
-      stock: 50,
-      image: ''
-    },
-    specifications: '32GB+1TB SSD',
-    quantity: 2
-  }
-])
+const cartItems = ref([])
 
 // 选中的项目
 const selectedItems = ref([])
@@ -126,9 +102,36 @@ const selectedItems = ref([])
 // 计算总价
 const totalPrice = computed(() => {
   return selectedItems.value.reduce((total, item) => {
-    return total + (item.product.price * item.quantity)
+    return total + (item.unitPrice * item.quantity)
   }, 0)
 })
+
+// 获取购物车列表
+const getCartItems = () => {
+  // 检查用户是否已登录
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+  if (!currentUser || !currentUser.id) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+  
+  // 调用后端接口获取购物车列表
+  http.get('/api/cart/list', {
+    params: {
+      userId: currentUser.id
+    }
+  }).then(res => {
+    if (res && res.code === 200) {
+      cartItems.value = res.data || []
+    } else {
+      ElMessage.error(res ? res.msg : '获取购物车列表失败')
+    }
+  }).catch(error => {
+    ElMessage.error('请求购物车列表出错')
+    console.error(error)
+  })
+}
 
 // 处理选中项变化
 const handleSelectionChange = (selection) => {
@@ -137,14 +140,46 @@ const handleSelectionChange = (selection) => {
 
 // 更新数量
 const updateQuantity = (item) => {
-  console.log('更新数量:', item)
-  // 实际应该调用后端接口更新购物车商品数量
+  // 检查用户是否已登录
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+  if (!currentUser || !currentUser.id) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+  
+  // 调用后端接口更新购物车商品数量
+  http.put('/api/cart/updateQuantity', {
+    cartItemId: item.id,
+    userId: currentUser.id,
+    quantity: item.quantity
+  }).then(res => {
+    if (res && res.code === 200) {
+      ElMessage.success('更新成功')
+    } else {
+      ElMessage.error(res ? res.msg : '更新失败')
+      // 如果更新失败，恢复原来的数量
+      getCartItems()
+    }
+  }).catch(error => {
+    ElMessage.error('请求更新出错')
+    console.error(error)
+    getCartItems()
+  })
 }
 
 // 删除商品
 const removeItem = (item) => {
+  // 检查用户是否已登录
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+  if (!currentUser || !currentUser.id) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+  
   ElMessageBox.confirm(
-    `确定要删除 "${item.product.name}" 吗?`,
+    `确定要删除 "${item.productName}" 吗?`,
     '确认删除',
     {
       confirmButtonText: '确定',
@@ -152,26 +187,65 @@ const removeItem = (item) => {
       type: 'warning',
     }
   ).then(() => {
-    const index = cartItems.value.findIndex(i => i.id === item.id)
-    if (index !== -1) {
-      cartItems.value.splice(index, 1)
-      ElMessage.success('删除成功')
-    }
+    // 调用后端接口删除购物车商品
+    http.delete('/api/cart/remove', {
+      params: {
+        cartItemId: item.id,
+        userId: currentUser.id
+      }
+    }).then(res => {
+      if (res && res.code === 200) {
+        const index = cartItems.value.findIndex(i => i.id === item.id)
+        if (index !== -1) {
+          cartItems.value.splice(index, 1)
+          selectedItems.value = selectedItems.value.filter(i => i.id !== item.id)
+          ElMessage.success('删除成功')
+        }
+      } else {
+        ElMessage.error(res ? res.msg : '删除失败')
+      }
+    }).catch(error => {
+      ElMessage.error('请求删除出错')
+      console.error(error)
+    })
   })
 }
 
 // 结算
 const checkout = () => {
-  ElMessage.info('去结算功能待实现')
-  // 应该跳转到订单确认页面
-  router.push('/checkout')
+  if (selectedItems.value.length === 0) {
+    ElMessage.warning('请选择要结算的商品')
+    return
+  }
+  
+  // 跳转到订单确认页面，传递选中的商品详细信息
+  // 将商品信息转换为JSON字符串传递
+  const orderItems = selectedItems.value.map(item => ({
+    id: item.id,
+    productId: item.productId,
+    productName: item.productName,
+    productImage: item.productImage,
+    unitPrice: item.unitPrice,
+    quantity: item.quantity
+  }))
+  
+  // 使用sessionStorage存储订单商品信息，避免URL过长
+  sessionStorage.setItem('orderItems', JSON.stringify(orderItems))
+  
+  router.push({
+    path: '/checkout'
+  })
 }
+
+onMounted(() => {
+  getCartItems()
+})
 </script>
 
 <style scoped>
 .shopping-cart {
   padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   min-height: 100vh;
 }
 
@@ -179,7 +253,7 @@ const checkout = () => {
   font-size: 28px;
   margin-bottom: 25px;
   color: #333;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -195,7 +269,7 @@ const checkout = () => {
 }
 
 .cart-table :deep(.el-table__header th) {
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
   color: white;
   font-weight: bold;
 }
@@ -235,13 +309,13 @@ const checkout = () => {
 }
 
 .checkout-button {
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%) !important;
+  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%) !important;
   border: none;
   border-radius: 10px;
   font-weight: bold;
   letter-spacing: 1px;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
   padding: 12px 30px;
 }
 

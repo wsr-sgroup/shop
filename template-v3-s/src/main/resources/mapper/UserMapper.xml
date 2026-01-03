@@ -3,16 +3,16 @@
 <mapper namespace="com.project.platform.mapper.UserMapper">
 
     <select id="queryPage" resultType="com.project.platform.entity.User">
-        SELECT user.*
-        FROM user
+        SELECT users.*
+        FROM users
         <include refid="queryConditions"/>
-        ORDER BY user.id DESC
+        ORDER BY users.id DESC
         LIMIT #{offset},#{pageSize}
     </select>
 
     <!-- 查询符合条件的数据总数-->
     <select id="queryCount" resultType="int">
-        SELECT count(user.id) FROM user
+        SELECT count(users.id) FROM users
         <include refid="queryConditions"/>
     </select>
 
@@ -20,70 +20,80 @@
     <sql id="queryConditions">
         <where>
             <if test="query.username !=null and query.username.trim() !=''">
-                AND user.username LIKE CONCAT('%',#{query.username},'%')
+                AND users.username LIKE CONCAT('%',#{query.username},'%')
             </if>
             <if test="query.tel !=null and query.tel.trim() !=''">
-                AND user.tel LIKE CONCAT('%',#{query.tel},'%')
+                AND users.tel LIKE CONCAT('%',#{query.tel},'%')
             </if>
             <if test="query.status !=null and query.status.trim() !=''">
-                AND user.status LIKE CONCAT('%',#{query.status},'%')
+                AND users.status LIKE CONCAT('%',#{query.status},'%')
             </if>
         </where>
     </sql>
     <insert id="insert" parameterType="com.project.platform.entity.User" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO user
+        INSERT INTO users
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="username != null">username,</if>
-            <if test="password != null">password,</if>
-            <if test="nickname != null">nickname,</if>
+            <if test="passwordHash != null">password_hash,</if>
             <if test="avatarUrl != null">avatar_url,</if>
-            <if test="tel != null">tel,</if>
+            <if test="phone != null">phone,</if>
             <if test="email != null">email,</if>
-            <if test="status != null">status,</if>
-            <if test="createTime != null">create_time,</if>
+            <if test="isActive != null">is_active,</if>
+            <if test="isAdmin != null">is_admin,</if>
+            <if test="lastLogin != null">last_login,</if>
+            <if test="createdAt != null">created_at,</if>
+            <if test="updatedAt != null">updated_at,</if>
         </trim>
         VALUES
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="username != null">#{username},</if>
-            <if test="password != null">#{password},</if>
-            <if test="nickname != null">#{nickname},</if>
+            <if test="passwordHash != null">#{passwordHash},</if>
             <if test="avatarUrl != null">#{avatarUrl},</if>
-            <if test="tel != null">#{tel},</if>
+            <if test="phone != null">#{phone},</if>
             <if test="email != null">#{email},</if>
-            <if test="status != null">#{status},</if>
-            <if test="createTime != null">#{createTime},</if>
+            <if test="isActive != null">#{isActive},</if>
+            <if test="isAdmin != null">#{isAdmin},</if>
+            <if test="lastLogin != null">#{lastLogin},</if>
+            <if test="createdAt != null">#{createdAt},</if>
+            <if test="updatedAt != null">#{updatedAt},</if>
         </trim>
     </insert>
     <update id="updateById" parameterType="com.project.platform.entity.User">
-        UPDATE user
+        UPDATE users
         <set>
             <if test="username !=null">
                 username=#{username},
             </if>
-            <if test="password !=null">
-                password=#{password},
-            </if>
-            <if test="nickname !=null">
-                nickname=#{nickname},
+            <if test="passwordHash !=null">
+                password_hash=#{passwordHash},
             </if>
             <if test="avatarUrl !=null">
                 avatar_url=#{avatarUrl},
             </if>
-            <if test="tel !=null">
-                tel=#{tel},
+            <if test="phone !=null">
+                phone=#{phone},
             </if>
             <if test="email !=null">
                 email=#{email},
             </if>
-            <if test="status !=null">
-                status=#{status},
+            <if test="isActive !=null">
+                is_active=#{isActive},
+            </if>
+            <if test="isAdmin !=null">
+                is_admin=#{isAdmin},
+            </if>
+            <if test="lastLogin !=null">
+                last_login=#{lastLogin},
+            </if>
+            <if test="updatedAt !=null">
+                updated_at=#{updatedAt},
             </if>
         </set>
         WHERE id=#{id}
     </update>
 
     <delete id="removeByIds">
-        DELETE FROM user
+        DELETE FROM users
         WHERE id IN
         <foreach item="id" collection="list" open="(" close=")" separator=",">
             #{id}

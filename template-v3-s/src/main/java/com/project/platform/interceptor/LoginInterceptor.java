@@ -28,31 +28,27 @@ public class LoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws Exception {
         long startTime = System.currentTimeMillis();
         request.setAttribute("requestStartTime", startTime);
-        // OPTIONS请求不做校验,
-        // 前后端分离的架构, 前端会发一个OPTIONS请求先做预检, 对预检请求不做校验
-        if (request.getMethod().toUpperCase().equals("OPTIONS")) {
-            return true;
+        
+        // 获取Authorization头
+        String authorization = request.getHeader("Authorization");
+        if (authorization != null && authorization.startsWith("Bearer ")) {
+            // 提取token
+            String token = authorization.substring(7);
+            try {
+                // 验证token
+                Claims claims = JwtUtils.verifyJwt(token);
+                if (claims != null) {
+                    String currentUserJson = (String) claims.get("currentUser");
+                    CurrentUserDTO currentUser = JSON.parseObject(currentUserJson, CurrentUserDTO.class);
+                    // 将用户信息存储到ThreadLocal
+                    CurrentUserThreadLocal.set(currentUser);
+                }
+            } catch (Exception e) {
+                log.error("解析token失败", e);
+            }
         }
-        String path = request.getRequestURL().toString();
-        log.info("接口登录拦截：，path：{}", path);
-        //获取header的token参数
-        String token = request.getHeader("token");
-        log.info("登录校验开始，token：{}", token);
-        if (token == null || token.isEmpty()) {
-            log.info("token为空，请求被拦截");
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            return false;
-        }
-        Claims claims = JwtUtils.verifyJwt(token);
-        //获取用户ID
-        if (claims == null) {
-            log.warn("token无效，请求被拦截");
-            throw new CustomException(HttpStatus.UNAUTHORIZED,"token无效，请求被拦截");
-        } else {
-            CurrentUserDTO currentUserDTO = JSON.parseObject(claims.get("currentUser").toString(), CurrentUserDTO.class);
-            CurrentUserThreadLocal.set(currentUserDTO);
-            return true;
-        }
+        
+        return true;
     }
 
     @Override

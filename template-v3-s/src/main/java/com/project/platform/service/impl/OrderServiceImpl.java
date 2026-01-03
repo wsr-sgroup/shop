@@ -1,32 +1,34 @@
 package com.project.platform.service.impl;
 
-import com.alibaba.fastjson2.JSONObject;
-import com.project.platform.entity.Order;
-import com.project.platform.entity.OrderItem;
-import com.project.platform.dto.CreateOrderDTO;
-import com.project.platform.dto.CurrentUserDTO;
-import com.project.platform.dto.OrderItemDTO;
-import com.project.platform.dto.UpdatePasswordDTO;
-import com.project.platform.dto.RetrievePasswordDTO;
-import com.project.platform.exception.CustomException;
-import com.project.platform.mapper.OrderMapper;
-// import com.project.platform.mapper.ProductMapper; // 临时注释，等商品功能实现后取消注释
-import com.project.platform.service.OrderItemService;
-import com.project.platform.service.OrderService;
-import com.project.platform.utils.CurrentUserThreadLocal;
-import com.project.platform.vo.PageVO;
-import jakarta.annotation.Resource;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.alibaba.fastjson2.JSONObject;
+import com.project.platform.dto.CreateOrderDTO; // 商品Mapper，用于查询商品信息
+import com.project.platform.dto.CurrentUserDTO;
+import com.project.platform.dto.OrderItemDTO;
+import com.project.platform.dto.RetrievePasswordDTO;
+import com.project.platform.dto.UpdatePasswordDTO;
+import com.project.platform.entity.Order;
+import com.project.platform.entity.OrderItem;
+import com.project.platform.entity.Product;
+import com.project.platform.exception.CustomException;
+import com.project.platform.mapper.OrderMapper;
+import com.project.platform.mapper.ProductMapper;
+import com.project.platform.service.OrderItemService;
+import com.project.platform.service.OrderService;
+import com.project.platform.vo.PageVO;
+
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 订单业务服务实现类
@@ -42,8 +44,8 @@ public class OrderServiceImpl implements OrderService {
     @Resource
     private OrderItemService orderItemService;
     
-    // @Resource
-    // private ProductMapper productMapper; // 临时注释，等商品功能实现后取消注释
+    @Resource
+    private ProductMapper productMapper; // 商品Mapper，用于查询商品信息
 
     /**
      * 分页查询订单列表
@@ -205,13 +207,23 @@ public class OrderServiceImpl implements OrderService {
                 orderItem.setProductId(itemDTO.getProductId());
                 orderItem.setQuantity(itemDTO.getQuantity());
                 orderItem.setUnitPrice(itemDTO.getUnitPrice() != null ? itemDTO.getUnitPrice() : BigDecimal.ZERO);
-                orderItem.setProductSpecifications(itemDTO.getProductSpec());
+                // 确保商品规格是有效的JSON字符串
+                String productSpec = itemDTO.getProductSpec();
+                // 强制使用空JSON对象，避免任何可能的无效JSON
+                productSpec = "{}";
+                orderItem.setProductSpecifications(productSpec);
                 orderItem.setTotalPrice(orderItem.getUnitPrice().multiply(new BigDecimal(orderItem.getQuantity())));
                 
-                // 临时使用固定值代替商品信息，等商品功能实现后再从商品表获取
-                // 注意：实际生产环境中需要从商品服务获取真实数据
-                orderItem.setProductName("临时商品名称"); // 临时字段，商品功能实现后替换
-                orderItem.setProductImage("/images/temp-product.jpg"); // 临时字段，商品功能实现后替换
+                // 从商品表获取真实的商品信息
+                Product product = productMapper.selectById(itemDTO.getProductId());
+                if (product != null) {
+                    orderItem.setProductName(product.getName()); // 使用真实的商品名称
+                    orderItem.setProductImage(product.getMainImage()); // 使用真实的商品图片
+                } else {
+                    // 如果商品不存在，使用默认值或前端提供的值
+                    orderItem.setProductName("商品 " + itemDTO.getProductId());
+                    orderItem.setProductImage("");
+                }
                 
                 // 设置时间信息
                 orderItem.setCreatedAt(order.getCreatedAt());

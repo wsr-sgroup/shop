@@ -22,10 +22,27 @@
           <el-icon><ShoppingCart /></el-icon>
           购物车
         </el-button>
-        <el-button @click="goToLogin">
-          <el-icon><User /></el-icon>
-          登录
-        </el-button>
+        <template v-if="checkLogin()">
+          <el-dropdown>
+            <span class="el-dropdown-link">
+              <el-avatar :size="32" :src="userInfo.avatarUrl || '@/assets/default-avatar.png'" />
+              {{ userInfo.nickname || userInfo.username }}
+              <el-icon class="el-icon--right"><arrow-down /></el-icon>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item @click="goToUserCenter">个人中心</el-dropdown-item>
+                <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </template>
+        <template v-else>
+          <el-button @click="goToLogin">
+            <el-icon><User /></el-icon>
+            登录
+          </el-button>
+        </template>
       </div>
     </div>
 
@@ -109,7 +126,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, ShoppingCart, User, Goods, Monitor, SetUp, OfficeBuilding, Refresh } from '@element-plus/icons-vue'
+import { Search, ShoppingCart, User, Goods, Monitor, SetUp, OfficeBuilding, Refresh, ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import http from '@/utils/http.js'
 
@@ -175,11 +192,28 @@ const handleCategoryChange = (category) => {
 
 // 获取商品列表
 const getPageList = () => {
-  // 这里应该调用后端接口获取商品数据
-  // 暂时使用模拟数据
-  
-  // 更新总数（实际应从后端获取）
-  pageInfo.value.total = 20
+  // 调用后端接口获取商品数据
+  http.get('/product/page', {
+    params: {
+      name: searchKeyword.value,
+      series: activeCategory.value === 'all' ? '' : activeCategory.value,
+      pageNum: pageInfo.value.pageNum,
+      pageSize: pageInfo.value.pageSize
+    }
+  }).then(res => {
+    console.log('商品列表响应:', res)
+    if (res && res.code === 200) {
+      productList.value = res.data.list || []
+      pageInfo.value.total = res.data.total || 0
+      console.log('商品列表:', productList.value)
+      console.log('总数量:', pageInfo.value.total)
+    } else {
+      ElMessage.error('获取商品列表失败')
+    }
+  }).catch(error => {
+    ElMessage.error('请求商品列表出错')
+    console.error(error)
+  })
 }
 
 // 查看商品详情
@@ -189,9 +223,29 @@ const viewProductDetail = (product) => {
 
 // 加入购物车
 const addToCart = (product) => {
-  console.log('加入购物车:', product)
-  // 这里应该调用后端接口添加到购物车
-  ElMessage.success('已添加到购物车')
+  // 检查用户是否已登录
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+  if (!currentUser || !currentUser.id) {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+  
+  // 调用后端接口添加到购物车
+  http.post('/api/cart/add', {
+    userId: currentUser.id,
+    productId: product.id,
+    quantity: 1
+  }).then(res => {
+    if (res && res.code === 200) {
+      ElMessage.success('已添加到购物车')
+    } else {
+      ElMessage.error(res ? res.msg : '添加购物车失败')
+    }
+  }).catch(error => {
+    ElMessage.error('请求添加购物车出错')
+    console.error(error)
+  })
 }
 
 // 页面大小改变
@@ -217,6 +271,28 @@ const goToLogin = () => {
   router.push('/login')
 }
 
+// 检查用户是否已登录
+const checkLogin = () => {
+  return localStorage.getItem('token') !== null
+}
+
+// 用户信息
+const userInfo = ref(JSON.parse(localStorage.getItem('currentUser') || '{}'))
+
+// 跳转到个人中心
+const goToUserCenter = () => {
+  // 个人中心页面需要后续开发
+  ElMessage.info('个人中心功能待实现')
+}
+
+// 退出登录
+const logout = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('currentUser')
+  ElMessage.success('退出登录成功')
+  window.location.reload()
+}
+
 onMounted(() => {
   getPageList()
 })
@@ -225,7 +301,7 @@ onMounted(() => {
 <style scoped>
 .mall-home {
   padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   min-height: 100vh;
 }
 

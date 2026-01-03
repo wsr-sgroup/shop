@@ -57,6 +57,12 @@ function getRoutes() {
             component: () =>
                 import ('../views/front/Home.vue')
         },
+        {   
+            path: "/user/center", 
+            name: "user-center", 
+            component: () => 
+                import ('../views/front/UserCenter.vue') 
+        },
         {
             path: "/product/:id",
             name: "product-detail",
@@ -68,6 +74,12 @@ function getRoutes() {
             name: "shopping-cart",
             component: () =>
                 import ('../views/front/Cart.vue')
+        },
+        {
+            path: "/checkout",
+            name: "checkout",
+            component: () =>
+                import ('../views/front/Checkout.vue')
         },
         {
             path: "/login",

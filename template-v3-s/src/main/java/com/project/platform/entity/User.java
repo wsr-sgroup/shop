@@ -8,17 +8,13 @@ public class User {
      */
     private Integer id;
     /**
-     * 	用户名
+     * 		用户名
      */
     private String username;
     /**
      * 		密码
      */
-    private String password;
-    /**
-     * 		名称
-     */
-    private String nickname;
+    private String passwordHash;
     /**
      * 		头像
      */
@@ -26,19 +22,31 @@ public class User {
     /**
      * 		电话
      */
-    private String tel;
+    private String phone;
     /**
      * 		邮件
      */
     private String email;
     /**
-     * 		状态
+     * 		账户是否激活
      */
-    private String status;
+    private Integer isActive;
+    /**
+     * 		是否是管理员
+     */
+    private Integer isAdmin;
+    /**
+     * 		最后登录时间
+     */
+    private LocalDateTime lastLogin;
     /**
      * 创建时间
      */
-    private LocalDateTime create_time;
+    private LocalDateTime createdAt;
+    /**
+     * 更新时间
+     */
+    private LocalDateTime updatedAt;
     //alt+insert
 
     public Integer getId() {
@@ -57,20 +65,12 @@ public class User {
         this.username = username;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getNickname() {
-        return nickname;
-    }
-
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public String getAvatarUrl() {
@@ -81,12 +81,12 @@ public class User {
         this.avatarUrl = avatarUrl;
     }
 
-    public String getTel() {
-        return tel;
+    public String getPhone() {
+        return phone;
     }
 
-    public void setTel(String tel) {
-        this.tel = tel;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getEmail() {
@@ -97,19 +97,43 @@ public class User {
         this.email = email;
     }
 
-    public String getStatus() {
-        return status;
+    public Integer getIsActive() {
+        return isActive;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setIsActive(Integer isActive) {
+        this.isActive = isActive;
     }
 
-    public LocalDateTime getCreate_time() {
-        return create_time;
+    public Integer getIsAdmin() {
+        return isAdmin;
     }
 
-    public void setCreate_time(LocalDateTime create_time) {
-        this.create_time = create_time;
+    public void setIsAdmin(Integer isAdmin) {
+        this.isAdmin = isAdmin;
+    }
+
+    public LocalDateTime getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(LocalDateTime lastLogin) {
+        this.lastLogin = lastLogin;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

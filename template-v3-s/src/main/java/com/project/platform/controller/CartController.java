@@ -1,13 +1,23 @@
 package com.project.platform.controller;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping; // 导入Spring的@Autowired
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.project.platform.dto.CartItemAddDTO;
 import com.project.platform.dto.CartItemUpdateDTO;
+import com.project.platform.service.CartItemService;
 import com.project.platform.vo.CartItemVO;
 import com.project.platform.vo.ResultVO;
-import com.project.platform.service.CartItemService;
-import org.springframework.beans.factory.annotation.Autowired; // 导入Spring的@Autowired
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 购物车接口控制器（对接前端购物车页面）
@@ -27,8 +37,12 @@ public class CartController {
      */
     @GetMapping("/list")
     public ResultVO<List<CartItemVO>> getCartList(@RequestParam Integer userId) {
-        List<CartItemVO> cartItemVOList = cartItemService.getCartItemVOListByUserId(userId);
-        return ResultVO.ok(cartItemVOList);
+        try {
+            List<CartItemVO> cartItemVOList = cartItemService.getCartItemVOListByUserId(userId);
+            return ResultVO.ok(cartItemVOList);
+        } catch (Exception e) {
+            return ResultVO.error("获取购物车列表失败：" + e.getMessage());
+        }
     }
 
     /**
@@ -74,5 +88,22 @@ public class CartController {
             return ResultVO.ok(true);
         }
         return ResultVO.error("更新选中状态失败");
+    }
+
+    /**
+     * 5. 添加商品到购物车（前端点击添加购物车时调用）
+     * 前端调用：POST /api/cart/add
+     */
+    @PostMapping("/add")
+    public ResultVO<Boolean> addCartItem(@RequestBody CartItemAddDTO addDTO) {
+        try {
+            boolean success = cartItemService.addCartItem(addDTO.getUserId(), addDTO.getProductId(), addDTO.getQuantity());
+            if (success) {
+                return ResultVO.ok(true);
+            }
+            return ResultVO.error("添加失败");
+        } catch (Exception e) {
+            return ResultVO.error(e.getMessage());
+        }
     }
 }

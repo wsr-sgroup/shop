@@ -34,6 +34,11 @@
                 v-model.trim="formData.code"
                 clearable
             >
+              <template #append>
+                <el-button :disabled="countdown > 0" @click="getVerificationCode">
+                  {{ countdown > 0 ? `${countdown}秒后重发` : '获取验证码' }}
+                </el-button>
+              </template>
             </el-input>
           </el-form-item>
           <el-form-item label="新密码" prop="password"
@@ -65,7 +70,6 @@
 import {ref} from 'vue';
 import {ElMessage} from 'element-plus';
 import http from "@/utils/http.js";
-import MyUpLoad from "@/components/MyUpload.vue";
 import router from "@/router/index.js";
 
 const formRef = ref(null);
@@ -76,20 +80,72 @@ const formData = ref({
   password: ''
 });
 
+// 验证码倒计时
+const countdown = ref(0);
+let timer = null;
+
+// 获取验证码
+const getVerificationCode = () => {
+  if (!formData.value.tel) {
+    ElMessage.error('请输入手机号');
+    return;
+  }
+  
+  // 发送获取验证码请求
+  http.post("/common/sendVerificationCode", {
+    tel: formData.value.tel,
+    type: formData.value.type
+  }).then(res => {
+    if (res && res.success) {
+      ElMessage.success('验证码发送成功');
+      startCountdown();
+    } else {
+      ElMessage.error('验证码发送失败');
+    }
+  }).catch(error => {
+    console.error('发送验证码出错:', error);
+    ElMessage.error('发送验证码出错');
+  });
+}
+
+// 开始倒计时
+const startCountdown = () => {
+  countdown.value = 60;
+  timer = setInterval(() => {
+    countdown.value--;
+    if (countdown.value <= 0) {
+      clearInterval(timer);
+      timer = null;
+    }
+  }, 1000);
+}
+
+// 组件销毁时清除定时器
+import { onUnmounted } from 'vue';
+onUnmounted(() => {
+  if (timer) {
+    clearInterval(timer);
+  }
+});
+
 const submitForm = () => {
   formRef.value.validate((valid) => {
     if (!valid) {
       return
     }
     http.post("/common/retrievePassword", formData.value).then(res => {
-      if (!res) {
-        return
+      if (res && res.success) {
+        ElMessage({
+          message: "重置成功，正在跳转",
+          type: "success"
+        });
+        router.push({path: "/login"})
+      } else {
+        ElMessage.error(res?.message || '重置密码失败');
       }
-      ElMessage({
-        message: "重置成功，正在跳转",
-        type: "success"
-      });
-      router.push({path: "/login"})
+    }).catch(error => {
+      console.error('重置密码出错:', error);
+      ElMessage.error('重置密码出错');
     });
   });
 }

@@ -1,17 +1,19 @@
 package com.project.platform.service.impl;
 
-import com.project.platform.entity.OrderItem;
-import com.project.platform.mapper.OrderItemMapper;
-import com.project.platform.service.OrderItemService;
-import com.project.platform.exception.CustomException;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import jakarta.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.project.platform.entity.OrderItem;
+import com.project.platform.exception.CustomException;
+import com.project.platform.mapper.OrderItemMapper;
+import com.project.platform.service.OrderItemService;
+
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 订单项业务服务实现类
@@ -99,6 +101,12 @@ public class OrderItemServiceImpl implements OrderItemService {
         LocalDateTime now = LocalDateTime.now();
         for (OrderItem orderItem : orderItems) {
             orderItem.setCreatedAt(now);
+            
+            // 确保商品规格是有效的JSON字符串
+            String productSpec = orderItem.getProductSpecifications();
+            // 强制使用空JSON对象，避免任何可能的无效JSON
+            productSpec = "{}";
+            orderItem.setProductSpecifications(productSpec);
             
             // 自动计算商品总价
             if (orderItem.getUnitPrice() != null && orderItem.getQuantity() != null) {

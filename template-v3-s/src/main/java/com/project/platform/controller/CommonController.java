@@ -14,9 +14,12 @@ import com.project.platform.dto.CurrentUserDTO;
 import com.project.platform.dto.LoginDTO;
 import com.project.platform.dto.RetrievePasswordDTO;
 import com.project.platform.dto.UpdatePasswordDTO;
+import com.project.platform.entity.Admin;
+import com.project.platform.entity.User;
 import com.project.platform.exception.CustomException;
 import com.project.platform.service.AdminService;
 import com.project.platform.service.CommonService;
+import com.project.platform.service.UserService;
 import com.project.platform.utils.CurrentUserThreadLocal;
 import com.project.platform.utils.JwtUtils;
 import com.project.platform.vo.ResponseVO;
@@ -32,6 +35,9 @@ public class CommonController {
 
     @Resource
     private AdminService adminService;
+    
+    @Resource
+    private UserService userService;
 
     /**
      * 登录
@@ -122,16 +128,19 @@ public class CommonController {
      */
     @GetMapping("currentUser")
     public ResponseVO<CurrentUserDTO> getCurrentUser() {
-        CurrentUserDTO currentUser = CurrentUserThreadLocal.getCurrentUser();
-        if (currentUser == null) {
-            // 如果没有登录，返回未认证错误
-            return ResponseVO.fail(401, "用户未登录", null);
+        try {
+            CurrentUserDTO currentUser = CurrentUserThreadLocal.getCurrentUser();
+            if (currentUser == null) {
+                // 如果没有登录，返回未认证错误
+                return ResponseVO.fail(401, "用户未登录", null);
+            }
+            
+            // 直接返回ThreadLocal中的当前用户信息，不需要再次查询数据库
+            return ResponseVO.ok(currentUser);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseVO.fail(500, "服务器内部错误: " + e.getMessage(), null);
         }
-        CommonService commonService = getCommonService(currentUser.getType());
-        CurrentUserDTO currentUserDTO = new CurrentUserDTO();
-        BeanUtils.copyProperties(commonService.selectById(currentUser.getId()), currentUserDTO);
-        currentUserDTO.setType(currentUser.getType());
-        return ResponseVO.ok(currentUserDTO);
     }
 
     /**
@@ -145,6 +154,8 @@ public class CommonController {
         switch (type) {
             case "ADMIN":
                 return adminService;
+            case "USER":
+                return userService;
             default:
                 throw new CustomException("用户类型错误");
         }

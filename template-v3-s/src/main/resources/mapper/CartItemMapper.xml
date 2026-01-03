@@ -7,13 +7,14 @@
         SELECT
             ci.*,
             p.name AS product_name,
-            p.image AS product_image,
+            p.main_image AS product_image,
             p.specifications AS product_specs,
-            p.stock AS product_stock
+            p.stock AS product_stock,
+            p.price AS unit_price
         FROM
-            cart_item ci
+            cart_items ci
         LEFT JOIN
-            product p ON ci.product_id = p.id
+            products p ON ci.product_id = p.id
         WHERE
             ci.cart_id = #{cartId}
     </select>
@@ -23,9 +24,9 @@
         SELECT
             *
         FROM
-            cart_item ci
+            cart_items ci
         LEFT JOIN
-            cart c ON ci.cart_id = c.id
+            carts c ON ci.cart_id = c.id
         WHERE
             ci.id = #{id}
             AND c.user_id = #{userId}
@@ -33,9 +34,20 @@
 
     <!-- 更新购物车项选中状态 -->
     <update id="updateSelectedStatus">
-        UPDATE cart_item
+        UPDATE cart_items
         SET selected = #{selected}
         WHERE id = #{id}
     </update>
+
+    <!-- 根据购物车ID和商品ID查询购物车项 -->
+    <select id="selectByCartIdAndProductId" resultType="com.project.platform.entity.CartItem">
+        SELECT
+            *
+        FROM
+            cart_items
+        WHERE
+            cart_id = #{cartId}
+            AND product_id = #{productId}
+    </select>
 
 </mapper>

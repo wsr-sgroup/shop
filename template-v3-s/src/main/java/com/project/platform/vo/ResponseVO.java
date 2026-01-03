@@ -42,6 +42,10 @@ public class ResponseVO<T> implements Serializable {
         return new ResponseVO<>(code, msg, data);
     }
 
+    public static <T> ResponseVO<T> fail(int code, String msg) {
+        return new ResponseVO<>(code, msg, null);
+    }
+
     public int getCode() {
         return code;
     }

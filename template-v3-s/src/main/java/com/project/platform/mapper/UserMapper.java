@@ -1,11 +1,12 @@
 package com.project.platform.mapper;
 
-import com.project.platform.entity.User;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
-import java.util.List;
-import java.util.Map;
+import com.project.platform.entity.User;
 
 public interface UserMapper {
 
@@ -28,7 +29,7 @@ public interface UserMapper {
      * 查询全部
      * @return
      */
-    @Select("SELECT * FROM user")
+    @Select("SELECT id, username, password_hash, avatar_url as avatarUrl, phone, email, is_active, is_admin, last_login, created_at, updated_at FROM users")
     List<User> list();
 
     /**
@@ -36,8 +37,7 @@ public interface UserMapper {
      * @param username
      * @return
      */
-    @Select("SELECT * FROM user WHERE username =#{username}")
-    // @Select("SELECT * FROM user WHERE username LIKE CONCAT('%',#{username},'%'")
+    @Select("SELECT id, username, password_hash, avatar_url as avatarUrl, phone, email, is_active, is_admin, last_login, created_at, updated_at FROM users WHERE username =#{username}")
     User selectByUsername(String username);
 
     /**
@@ -45,16 +45,16 @@ public interface UserMapper {
      * @param id
      * @return
      */
-    @Select("SELECT * FROM user WHERE id =#{id}")
+    @Select("SELECT id, username, password_hash, avatar_url as avatarUrl, phone, email, is_active, is_admin, last_login, created_at, updated_at FROM users WHERE id =#{id}")
     User selectById(Integer id);
 
     /**
      * 根据电话查询
-     * @param tel
+     * @param phone
      * @return
      */
-    @Select("SELECT * FROM user WHERE tel =#{tel}")
-    User selectByTel(String tel);
+    @Select("SELECT id, username, password_hash, avatar_url as avatarUrl, phone, email, is_active, is_admin, last_login, created_at, updated_at FROM users WHERE phone =#{phone}")
+    User selectByTel(String phone);
 
     /**
      * 新增

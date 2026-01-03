@@ -1,5 +1,14 @@
 package com.project.platform.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import com.alibaba.fastjson2.JSONObject;
 import com.project.platform.dto.CurrentUserDTO;
 import com.project.platform.dto.RetrievePasswordDTO;
@@ -12,15 +21,8 @@ import com.project.platform.mapper.UserMapper;
 import com.project.platform.service.UserService;
 import com.project.platform.utils.CurrentUserThreadLocal;
 import com.project.platform.vo.PageVO;
-import jakarta.annotation.Resource;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import jakarta.annotation.Resource;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -44,14 +46,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public CurrentUserDTO login(String username, String password) {
         User user = userMapper.selectByUsername(username);
-        if (user == null || !user.getPassword().equals(password)) {
+        if (user == null || !user.getPasswordHash().equals(password)) {
             throw new CustomException("用户名或密码错误");
         }
-        if ("禁用".equals(user.getStatus())) {
+        if (user.getIsActive() == 0) {
             throw new CustomException("用户已禁用");
         }
         CurrentUserDTO currentUserDTO = new CurrentUserDTO();
         BeanUtils.copyProperties(user, currentUserDTO);
+        // 更新最后登录时间
+        user.setLastLogin(LocalDateTime.now());
+        userMapper.updateById(user);
         return currentUserDTO;
     }
 
@@ -64,13 +69,16 @@ public class UserServiceImpl implements UserService {
     public void register(JSONObject date) {
         User user = new User();
         user.setUsername(date.getString("username"));
-        user.setPassword(date.getString("password"));
-        user.setNickname(date.getString("nickname"));
+        user.setPasswordHash(date.getString("password"));
         user.setAvatarUrl(date.getString("avatarUrl"));
+        user.setPhone(date.getString("phone"));
+        user.setEmail(date.getString("email"));
+        // 设置状态
+        user.setIsActive(1);
+        user.setIsAdmin(0);
         // 设置时间
-        user.setCreate_time(LocalDateTime.now());
-        // 设置用户状态
-        user.setStatus("启用");
+        user.setCreatedAt(LocalDateTime.now());
+        user.setUpdatedAt(LocalDateTime.now());
         insert(user);
     }
 
@@ -78,10 +86,10 @@ public class UserServiceImpl implements UserService {
     public void updateCurrentUserInfo(CurrentUserDTO currentUserDTO) {
         User user = userMapper.selectById(currentUserDTO.getId());
         user.setId(currentUserDTO.getId());
-        user.setNickname(currentUserDTO.getNickname());
         user.setAvatarUrl(currentUserDTO.getAvatarUrl());
-        user.setTel(currentUserDTO.getTel());
+        user.setPhone(currentUserDTO.getTel());
         user.setEmail(currentUserDTO.getEmail());
+        user.setUpdatedAt(LocalDateTime.now());
         userMapper.updateById(user);
     }
 
@@ -89,10 +97,11 @@ public class UserServiceImpl implements UserService {
     public void updateCurrentUserPassword(UpdatePasswordDTO updatePassword) {
         // 用户修改
         User user = userMapper.selectById(CurrentUserThreadLocal.getCurrentUser().getId());
-        if (!user.getPassword().equals(updatePassword.getOldPassword())) {
+        if (!user.getPasswordHash().equals(updatePassword.getOldPassword())) {
             throw new CustomException("旧密码不正确");
         }
-        user.setPassword(updatePassword.getNewPassword());
+        user.setPasswordHash(updatePassword.getNewPassword());
+        user.setUpdatedAt(LocalDateTime.now());
         userMapper.updateById(user);
 
     }
@@ -100,7 +109,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public void resetPassword(Integer id) {
         User user = userMapper.selectById(id);
-        user.setPassword(resetPassword);
+        user.setPasswordHash(resetPassword);
+        user.setUpdatedAt(LocalDateTime.now());
         userMapper.updateById(user);
 
     }
@@ -112,7 +122,8 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new CustomException("手机号不存在");
         }
-        user.setPassword(retrievePasswordDTO.getPassword());
+        user.setPasswordHash(retrievePasswordDTO.getPassword());
+        user.setUpdatedAt(LocalDateTime.now());
         userMapper.updateById(user);
 
     }
@@ -130,9 +141,20 @@ public class UserServiceImpl implements UserService {
     @Override
     public void insert(User entity) {
         check(entity);
-        entity.setCreate_time(LocalDateTime.now());
-        if (entity.getPassword() == null) {
-            entity.setPassword(resetPassword);
+        if (entity.getPasswordHash() == null) {
+            entity.setPasswordHash(resetPassword);
+        }
+        if (entity.getCreatedAt() == null) {
+            entity.setCreatedAt(LocalDateTime.now());
+        }
+        if (entity.getUpdatedAt() == null) {
+            entity.setUpdatedAt(LocalDateTime.now());
+        }
+        if (entity.getIsActive() == null) {
+            entity.setIsActive(1);
+        }
+        if (entity.getIsAdmin() == null) {
+            entity.setIsAdmin(0);
         }
         userMapper.insert(entity);
     }

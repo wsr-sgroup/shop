@@ -15,7 +15,7 @@ const http = axios.create({
 // 请求拦截器
 http.interceptors.request.use(config => {
     if (localStorage.getItem("token")) {
-        config.headers["token"] = localStorage.getItem("token");
+        config.headers["Authorization"] = "Bearer " + localStorage.getItem("token");
     }
     return config;
 })
@@ -32,7 +32,7 @@ http.interceptors.response.use(response => {
             router.push("/login");
             break;
         case 409:
-            ElMessage({message: error.response.data.data, type: "error"});
+            ElMessage({message: error.response.data.data || error.response.data.msg || "请求冲突", type: "error"});
             break;
         case 404:
             ElMessage({message: "接口未找到", type: "error"});
@@ -40,9 +40,8 @@ http.interceptors.response.use(response => {
         case 500:
             ElMessage({message: "服务异常", type: "error"});
             break;
-        default:
-            return Promise.reject(error);
     }
+    return Promise.reject(error);
 });
 // 打印环境变量
 console.log("环境:", import.meta.env.NODE_ENV);

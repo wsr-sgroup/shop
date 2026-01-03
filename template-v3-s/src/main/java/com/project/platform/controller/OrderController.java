@@ -170,7 +170,7 @@ public class OrderController {
         // 从线程本地变量获取当前登录用户的ID
         Integer userId = CurrentUserThreadLocal.getCurrentUserId();
         if (userId == null) {
-            return ResponseVO.fail(401, "请先登录");
+            return ResponseVO.<PageVO<Object>>fail(401, "请先登录");
         }
         
         // 构建查询条件，仅查询当前用户的订单

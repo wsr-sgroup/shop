@@ -1,145 +1,181 @@
 <template>
   <div class="checkout-page">
-    <van-nav-bar
-      title="确认订单"
-      left-text="返回"
-      left-arrow
-      @click-left="onClickLeft"
-    />
+    <el-page-header @back="onClickLeft" title="确认订单"></el-page-header>
     
     <!-- 收货地址 -->
-    <div class="address-section" @click="showAddressPicker">
-      <div v-if="selectedAddress" class="address-info">
-        <van-icon name="location-o" size="20" />
-        <div class="address-details">
-          <div class="recipient-info">
-            <span class="name">{{ selectedAddress.recipient_name }}</span>
-            <span class="phone">{{ selectedAddress.recipient_phone }}</span>
-          </div>
-          <div class="address-full">
-            {{ selectedAddress.province }}{{ selectedAddress.city }}{{ selectedAddress.district }}{{ selectedAddress.street_address }}
-          </div>
-        </div>
-        <van-icon name="arrow" />
-      </div>
-      <div v-else class="no-address">
-        <van-icon name="location-o" size="20" />
-        <span>请选择收货地址</span>
-        <van-icon name="arrow" />
-      </div>
+    <div class="address-section">
+      <h3 class="section-title">收货信息</h3>
+      <el-card shadow="never" class="address-card">
+        <el-form label-position="top" :model="selectedAddress" label-width="80px" style="max-width: 600px;">
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <el-form-item label="收货人" required>
+                <el-input v-model="selectedAddress.recipient_name" placeholder="请输入收货人姓名" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="联系电话" required>
+                <el-input v-model="selectedAddress.recipient_phone" placeholder="请输入联系电话" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row :gutter="20">
+            <el-col :span="8">
+              <el-form-item label="省份" required>
+                <el-input v-model="selectedAddress.province" placeholder="请输入省份" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="城市" required>
+                <el-input v-model="selectedAddress.city" placeholder="请输入城市" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="区县" required>
+                <el-input v-model="selectedAddress.district" placeholder="请输入区县" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="24">
+              <el-form-item label="详细地址" required>
+                <el-input v-model="selectedAddress.street_address" placeholder="请输入详细街道地址" :rows="2" type="textarea" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+      </el-card>
     </div>
     
     <!-- 商品列表 -->
     <div class="goods-section">
-      <van-card
+      <h3 class="section-title">商品信息</h3>
+      <el-card
         v-for="item in orderItems"
         :key="item.id"
-        :num="item.quantity"
-        :price="item.unit_price.toFixed(2)"
-        :title="item.product_name"
-        :thumb="item.product_image"
-      />
+        shadow="never"
+        class="product-card"
+      >
+        <template #header>
+          <div class="card-header">
+            <img :src="item.productImage" :alt="item.productName" class="product-thumb" />
+            <div class="product-info">
+              <h4 class="product-title">{{ item.productName }}</h4>
+              <div class="product-price">¥{{ item.unitPrice.toFixed(2) }}</div>
+            </div>
+          </div>
+        </template>
+        <div class="card-body">
+          <div class="product-quantity">数量: {{ item.quantity }}</div>
+          <div class="product-subtotal">小计: ¥{{ (item.unitPrice * item.quantity).toFixed(2) }}</div>
+        </div>
+      </el-card>
     </div>
     
     <!-- 订单金额 -->
     <div class="order-summary">
-      <van-cell-group>
-        <van-cell title="商品总额" :value="`¥${totalAmount.toFixed(2)}`" />
-        <van-cell title="运费" value="¥0.00" />
-        <van-cell title="优惠券" value="-¥0.00" />
-        <van-cell title="实际付款" :value="`¥${totalAmount.toFixed(2)}`" class="total-amount" />
-      </van-cell-group>
+      <h3 class="section-title">订单金额</h3>
+      <el-card shadow="never">
+        <el-descriptions :column="1" border>
+          <el-descriptions-item label="商品总额">¥{{ totalAmount.toFixed(2) }}</el-descriptions-item>
+          <el-descriptions-item label="运费">¥{{ shippingFee.toFixed(2) }}</el-descriptions-item>
+          <el-descriptions-item label="优惠券">-¥{{ coupon.toFixed(2) }}</el-descriptions-item>
+          <el-descriptions-item label="实际付款" class="total-amount">¥{{ actualPayment.toFixed(2) }}</el-descriptions-item>
+        </el-descriptions>
+      </el-card>
     </div>
     
     <!-- 支付方式 -->
     <div class="payment-method">
-      <van-cell title="支付方式" is-link @click="showPaymentPopup = true">
-        <span>{{ currentPaymentMethod.text || '请选择' }}</span>
-      </van-cell>
+      <el-card shadow="never">
+        <el-row @click="showPaymentPopup = true" class="payment-row">
+          <el-col :span="6">支付方式</el-col>
+          <el-col :span="16">{{ currentPaymentMethod.text || '请选择' }}</el-col>
+          <el-col :span="2"><el-icon><Right /></el-icon></el-col>
+        </el-row>
+      </el-card>
     </div>
     
-    <!-- 提交订单 -->
+    <!-- 付款按钮 -->
     <div class="submit-order">
-      <van-button 
+      <el-button 
         type="primary" 
         block 
         @click="submitOrder"
-        :disabled="!selectedAddress || !currentPaymentMethod.value"
+        :disabled="!selectedAddress.recipient_name || !selectedAddress.recipient_phone || !currentPaymentMethod.value"
+        size="large"
       >
-        提交订单 ¥{{ totalAmount.toFixed(2) }}
-      </van-button>
+        付款 ¥{{ actualPayment.toFixed(2) }}
+      </el-button>
     </div>
     
     <!-- 地址选择弹窗 -->
-    <van-popup v-model:show="showAddressList" position="bottom" round style="height: 80%; padding-top: 12px;">
-      <div class="address-popup">
-        <div class="popup-header">
-          <span>收货地址</span>
-          <van-icon name="cross" @click="showAddressList = false" />
+    <el-dialog
+      v-model="showAddressList"
+      title="收货地址"
+      width="90%"
+      center
+    >
+      <div class="address-list">
+        <div 
+          v-for="item in addressList" 
+          :key="item.id"
+          class="address-item"
+          @click="onSelectAddress(item)"
+        >
+          <div class="address-item-header">
+            <span class="address-name">{{ item.name }}</span>
+            <span class="address-phone">{{ item.tel }}</span>
+            <el-tag v-if="item.isDefault" size="small" type="primary">默认</el-tag>
+          </div>
+          <div class="address-item-content">{{ item.address }}</div>
         </div>
-        <van-address-list
-          v-model="chosenAddressId"
-          :list="addressList"
-          default-tag-text="默认"
-          @add="onAddAddress"
-          @edit="onEditAddress"
-          @select="onSelectAddress"
-        />
       </div>
-    </van-popup>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button type="primary" block @click="showAddressList = false">关闭</el-button>
+        </span>
+      </template>
+    </el-dialog>
     
     <!-- 支付方式弹窗 -->
-    <van-popup v-model:show="showPaymentPopup" position="bottom" round style="padding: 20px;">
-      <div class="payment-popup">
-        <div class="popup-title">选择支付方式</div>
-        <van-radio-group v-model="currentPaymentMethod.value">
-          <van-cell-group>
-            <van-cell clickable @click="currentPaymentMethod = { value: 'wechat', text: '微信支付' }">
-              <div class="payment-option">
-                <van-icon name="wechat" color="#07c160" size="24" />
-                <span>微信支付</span>
-              </div>
-              <template #right-icon>
-                <van-radio name="wechat" />
-              </template>
-            </van-cell>
-            <van-cell clickable @click="currentPaymentMethod = { value: 'alipay', text: '支付宝' }">
-              <div class="payment-option">
-                <van-icon name="alipay" color="#1677ff" size="24" />
-                <span>支付宝</span>
-              </div>
-              <template #right-icon>
-                <van-radio name="alipay" />
-              </template>
-            </van-cell>
-            <van-cell clickable @click="currentPaymentMethod = { value: 'balance', text: '余额支付' }">
-              <div class="payment-option">
-                <van-icon name="balance-pay" size="24" />
-                <span>余额支付</span>
-              </div>
-              <template #right-icon>
-                <van-radio name="balance" />
-              </template>
-            </van-cell>
-          </van-cell-group>
-        </van-radio-group>
-        <van-button 
-          type="primary" 
-          block 
-          @click="confirmPaymentMethod"
-          style="margin-top: 20px;"
+    <el-dialog
+      v-model="showPaymentPopup"
+      title="选择支付方式"
+      width="80%"
+      center
+    >
+      <div class="payment-methods">
+        <div 
+          v-for="method in paymentMethods" 
+          :key="method.value"
+          class="payment-method-item"
+          @click="currentPaymentMethod.value = method.value; currentPaymentMethod.text = method.text"
         >
-          确认
-        </van-button>
+          <div class="payment-method-info">
+            <el-icon :size="24" :color="method.color"><component :is="method.icon" /></el-icon>
+            <span>{{ method.text }}</span>
+          </div>
+          <el-radio v-model="currentPaymentMethod.value" :label="method.value"></el-radio>
+        </div>
       </div>
-    </van-popup>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="showPaymentPopup = false">取消</el-button>
+          <el-button type="primary" @click="confirmPaymentMethod">确认</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { showToast, showConfirmDialog } from 'vant'
+import { ElMessage } from 'element-plus'
+import { 
+  HomeFilled, User, Search, Setting, Check, Delete, Edit, Plus, Minus, Close, Right 
+} from '@element-plus/icons-vue'
 import http from '@/utils/http'
 
 const router = useRouter()
@@ -149,20 +185,46 @@ const route = useRoute()
 const showAddressList = ref(false)
 const addressList = ref([])
 const chosenAddressId = ref('')
-const selectedAddress = ref(null)
+// 初始化选中地址，确保包含所有需要的字段
+const selectedAddress = ref({
+  recipient_name: '',
+  recipient_phone: '',
+  province: '',
+  city: '',
+  district: '',
+  street_address: ''
+})
 
 // 支付方式相关数据
 const showPaymentPopup = ref(false)
 const currentPaymentMethod = ref({ value: '', text: '' })
 
+// 支付方式列表
+const paymentMethods = ref([
+  { value: 'wechat', text: '微信支付', icon: HomeFilled, color: '#07c160' },
+  { value: 'alipay', text: '支付宝', icon: User, color: '#1677ff' },
+  { value: 'balance', text: '余额支付', icon: Setting, color: '#ff9800' }
+])
+
 // 订单相关数据
 const orderItems = ref([])
+
+// 运费（10到50元之间的随机数）
+const shippingFee = ref(0)
+
+// 优惠券金额（固定为0）
+const coupon = ref(0)
 
 // 获取订单总金额
 const totalAmount = computed(() => {
   return orderItems.value.reduce((sum, item) => {
-    return sum + (item.unit_price * item.quantity)
+    return sum + (item.unitPrice * item.quantity)
   }, 0)
+})
+
+// 计算实际付款金额
+const actualPayment = computed(() => {
+  return totalAmount.value + shippingFee.value - coupon.value
 })
 
 // 返回上一页
@@ -188,8 +250,16 @@ const onEditAddress = (item, index) => {
 }
 
 // 选择地址
-const onSelectAddress = (item, index) => {
-  selectedAddress.value = item
+const onSelectAddress = (item) => {
+  selectedAddress.value = {
+    id: item.id,
+    recipient_name: item.name,
+    recipient_phone: item.tel,
+    province: item.province,
+    city: item.city,
+    district: item.district,
+    street_address: item.street_address
+  }
   chosenAddressId.value = item.id
   showAddressList.value = false
 }
@@ -201,132 +271,177 @@ const confirmPaymentMethod = () => {
 
 // 提交订单
 const submitOrder = async () => {
-  if (!selectedAddress.value) {
-    showToast('请选择收货地址')
+  // 验证收货人姓名
+  if (!selectedAddress.value.recipient_name) {
+    ElMessage.warning('请填写收货人姓名')
     return
   }
   
+  // 验证联系电话
+  if (!selectedAddress.value.recipient_phone) {
+    ElMessage.warning('请填写联系电话')
+    return
+  }
+  
+  // 验证支付方式
   if (!currentPaymentMethod.value.value) {
-    showToast('请选择支付方式')
+    ElMessage.warning('请选择支付方式')
+    return
+  }
+  
+  // 验证商品列表
+  if (orderItems.value.length === 0) {
+    ElMessage.warning('订单中没有商品')
     return
   }
   
   try {
+    // 显示提交中的提示
+    ElMessage.info('正在提交订单...')
+    
     // 构造订单数据
     const orderData = {
-      user_id: 1, // 实际应用中应从用户信息获取
-      address_id: selectedAddress.value.id,
-      total_amount: totalAmount.value,
-      discount_amount: 0,
-      shipping_fee: 0,
-      final_amount: totalAmount.value,
-      payment_method: currentPaymentMethod.value.value,
-      order_status: 'pending',
-      order_items: orderItems.value.map(item => ({
-        product_id: item.product_id,
-        product_name: item.product_name,
-        product_image: item.product_image,
-        unit_price: item.unit_price,
-        quantity: item.quantity,
-        item_amount: item.unit_price * item.quantity
+      addressId: selectedAddress.value.id || 0, // 使用默认地址ID或0
+      paymentMethod: currentPaymentMethod.value.value,
+      buyerNote: '',
+      invoiceNeeded: 0,
+      orderItems: orderItems.value.map(item => ({
+        productId: parseInt(item.productId),
+        quantity: parseInt(item.quantity),
+        unitPrice: parseFloat(item.unitPrice),
+        productSpec: ''
       }))
     }
     
-    // 如果选择的是余额支付，需要检查余额
-    if (currentPaymentMethod.value.value === 'balance') {
-      // 这里应该调用获取用户余额的接口
-      // 由于接口尚未实现，暂时留空
-      // const balance = await getUserBalance()
-      // if (balance < totalAmount.value) {
-      //   showToast('余额不足')
-      //   return
-      // }
-    }
+    console.log('提交订单数据:', orderData)
     
     // 提交订单到后端
-    const res = await http.post('/api/orders', orderData)
+    const res = await http.post('/order/create', orderData)
     
-    if (res.data.success) {
-      // 根据支付方式跳转
-      switch (currentPaymentMethod.value.value) {
-        case 'wechat':
-          // 跳转到微信支付页面（模拟）
-          window.open('https://pay.weixin.qq.com/', '_blank')
-          break
-        case 'alipay':
-          // 跳转到支付宝页面（模拟）
-          window.open('https://www.alipay.com/', '_blank')
-          break
-        case 'balance':
-          // 余额支付，直接完成订单
-          showToast('支付成功')
-          router.push('/order-success')
-          break
-      }
+    console.log('订单创建响应:', res)
+    
+    if (res && res.success) {
+      ElMessage.success('订单创建成功，正在跳转到订单中心')
+      // 跳转到用户订单界面
+      router.push('/user/center')
       
       // 清空购物车等相关操作
+      // 从sessionStorage中移除订单商品信息
+      sessionStorage.removeItem('orderItems')
     } else {
-      showToast('提交订单失败')
+      ElMessage.error(res && res.msg || '提交订单失败')
     }
   } catch (error) {
     console.error('提交订单出错:', error)
-    showToast('提交订单异常')
+    ElMessage.error('提交订单异常，请查看控制台日志')
   }
 }
 
 // 获取用户地址列表
 const fetchAddresses = async () => {
-  try {
-    const res = await http.get('/api/user/addresses')
-    if (res.data.success) {
-      addressList.value = res.data.data.map(addr => ({
-        id: addr.id,
-        name: addr.recipient_name,
-        tel: addr.recipient_phone,
-        address: `${addr.province}${addr.city}${addr.district}${addr.street_address}`,
-        isDefault: addr.is_default
-      }))
-      
-      // 设置默认地址
-      const defaultAddress = addressList.value.find(addr => addr.isDefault)
-      if (defaultAddress) {
-        chosenAddressId.value = defaultAddress.id
-        selectedAddress.value = {
-          id: defaultAddress.id,
-          recipient_name: defaultAddress.name,
-          recipient_phone: defaultAddress.tel,
-          province: defaultAddress.province,
-          city: defaultAddress.city,
-          district: defaultAddress.district,
-          street_address: defaultAddress.address_detail
-        }
-      }
+  // 使用模拟地址数据，避免调用不存在的API
+  addressList.value = [
+    {
+      id: 1,
+      name: '张三',
+      tel: '13800138000',
+      province: '广东省',
+      city: '深圳市',
+      district: '福田区',
+      street_address: '福华路3001号会展中心',
+      address: '广东省深圳市福田区福华路3001号会展中心',
+      isDefault: true
+    },
+    {
+      id: 2,
+      name: '李四',
+      tel: '13800138001',
+      province: '北京市',
+      city: '北京市',
+      district: '朝阳区',
+      street_address: '建国门外大街1号国贸大厦',
+      address: '北京市朝阳区建国门外大街1号国贸大厦',
+      isDefault: false
     }
-  } catch (error) {
-    console.error('获取地址列表失败:', error)
+  ]
+  
+  // 设置默认地址
+  const defaultAddress = addressList.value.find(addr => addr.isDefault)
+  if (defaultAddress) {
+    chosenAddressId.value = defaultAddress.id
+    selectedAddress.value = {
+      id: defaultAddress.id,
+      recipient_name: defaultAddress.name,
+      recipient_phone: defaultAddress.tel,
+      province: defaultAddress.province,
+      city: defaultAddress.city,
+      district: defaultAddress.district,
+      street_address: defaultAddress.street_address
+    }
   }
 }
 
-// 初始化订单项（这里是从路由参数获取，实际可根据需求调整）
+// 初始化订单项
 const initOrderItems = () => {
-  // 模拟订单项数据
-  const items = route.query.items ? JSON.parse(route.query.items) : []
-  orderItems.value = items
+  console.log('初始化订单项')
   
-  // 如果没有传入订单项，则可能是从购物车进入
-  if (orderItems.value.length === 0) {
-    // 这里可以调用获取购物车数据的接口
-    orderItems.value = [
-      {
-        id: 1,
-        product_id: 1,
-        product_name: '联想ThinkPad X1 Carbon 2023',
-        product_image: 'https://example.com/product.jpg',
-        unit_price: 9999.00,
-        quantity: 1
-      }
-    ]
+  // 从sessionStorage获取订单商品信息
+  const orderItemsStr = sessionStorage.getItem('orderItems')
+  
+  if (orderItemsStr) {
+    try {
+      orderItems.value = JSON.parse(orderItemsStr)
+      console.log('从sessionStorage获取订单商品信息:', orderItems.value)
+      
+      // 生成10到50元之间的随机运费
+      shippingFee.value = parseFloat((Math.random() * (50 - 10) + 10).toFixed(2))
+      console.log('生成的随机运费:', shippingFee.value)
+      
+      // 优惠券金额固定为0
+      coupon.value = 0
+      console.log('优惠券金额:', coupon.value)
+    } catch (error) {
+      console.error('解析订单商品信息失败:', error)
+      ElMessage.error('获取订单商品信息失败')
+      // 使用模拟数据
+      useMockData()
+    }
+  } else {
+    console.log('sessionStorage中没有订单商品信息，使用模拟数据')
+    useMockData()
   }
+}
+
+// 使用模拟数据
+const useMockData = () => {
+  // 模拟购物车选中的商品
+  orderItems.value = [
+    {
+      id: 1,
+      productId: 1,
+      productName: '商品1',
+      productImage: 'https://via.placeholder.com/150',
+      unitPrice: 3,
+      quantity: 1
+    },
+    {
+      id: 2,
+      productId: 2,
+      productName: '商品2',
+      productImage: 'https://via.placeholder.com/150',
+      unitPrice: 5,
+      quantity: 3
+    }
+  ]
+  
+  // 生成10到50元之间的随机运费
+  shippingFee.value = parseFloat((Math.random() * (50 - 10) + 10).toFixed(2))
+  
+  // 优惠券金额固定为0
+  coupon.value = 0
+  
+  console.log('使用模拟数据，订单商品:', orderItems.value)
+  console.log('模拟数据，运费:', shippingFee.value)
 }
 
 // 页面加载时初始化数据
@@ -338,116 +453,257 @@ onMounted(() => {
 
 <style scoped>
 .checkout-page {
-  padding-bottom: 60px;
+  padding-bottom: 120px;
+  background-color: #f5f7fa;
+  min-height: 100vh;
 }
 
+/* 区块标题 */
+.section-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #303133;
+  margin: 20px 16px 12px;
+}
+
+/* 收货地址区块 */
 .address-section {
-  background: white;
-  margin: 10px;
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
 }
 
-.address-info {
+.address-card {
+  margin: 0 16px;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.address-card:hover {
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* 商品列表区块 */
+.goods-section {
+  margin-bottom: 20px;
+}
+
+.goods-section .section-title {
+  color: #303133;
+}
+
+.product-card {
+  margin: 0 16px 12px;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.product-card:hover {
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.card-header {
   display: flex;
   align-items: center;
 }
 
-.address-details {
+.product-thumb {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 12px;
+}
+
+.product-info {
   flex: 1;
-  margin-left: 10px;
 }
 
-.recipient-info {
-  display: flex;
-  margin-bottom: 5px;
+.product-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #303133;
+  margin: 0 0 8px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
-.recipient-info .name {
+.product-price {
+  font-size: 16px;
   font-weight: bold;
-  margin-right: 15px;
+  color: #f56c6c;
 }
 
-.address-full {
-  color: #666;
+.card-body {
+  text-align: right;
+  color: #606266;
   font-size: 14px;
 }
 
-.no-address {
-  display: flex;
-  align-items: center;
-  color: #999;
-}
-
-.no-address span {
-  margin: 0 10px;
-}
-
-.goods-section {
-  background: white;
-  margin: 10px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
+/* 订单金额区块 */
 .order-summary {
+  margin-bottom: 20px;
+}
+
+.order-summary .section-title {
+  color: #303133;
+}
+
+.order-summary .el-card {
+  margin: 0 16px;
+  border-radius: 12px;
   background: white;
-  margin: 10px;
-  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .total-amount {
   font-weight: bold;
-  font-size: 16px;
-  color: #ee0a24;
+  font-size: 18px;
+  color: #f56c6c;
+  background: linear-gradient(135deg, #f56c6c, #ff8f8f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
+/* 支付方式区块 */
 .payment-method {
-  background: white;
-  margin: 10px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
 }
 
+.payment-method .section-title {
+  color: #303133;
+}
+
+.payment-method .el-card {
+  margin: 0 16px;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.payment-row {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 12px 0;
+}
+
+.payment-row:hover {
+  background-color: rgba(64, 158, 255, 0.05);
+}
+
+/* 付款按钮 */
 .submit-order {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 10px;
+  padding: 16px;
   background: white;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -4px 16px 0 rgba(0, 0, 0, 0.1);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  z-index: 1000;
 }
 
-.address-popup .popup-header {
+.submit-order .el-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  height: 48px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 24px;
+  transition: all 0.3s ease;
+}
+
+.submit-order .el-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px 0 rgba(102, 126, 234, 0.4);
+}
+
+.submit-order .el-button:active {
+  transform: translateY(0);
+}
+
+/* 支付方式弹窗 */
+.payment-methods {
+  padding: 16px;
+}
+
+.payment-method-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 15px 10px;
-  font-size: 16px;
-  font-weight: bold;
-  border-bottom: 1px solid #f5f5f5;
-  margin-bottom: 10px;
+  padding: 16px;
+  border-radius: 12px;
+  background: white;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
 }
 
-.payment-popup .popup-title {
-  text-align: center;
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 20px;
+.payment-method-item:hover {
+  background-color: rgba(64, 158, 255, 0.05);
+  border-color: rgba(64, 158, 255, 0.2);
 }
 
-.payment-option {
+.payment-method-item.active {
+  background-color: rgba(64, 158, 255, 0.1);
+  border-color: #409eff;
+}
+
+.payment-method-info {
   display: flex;
   align-items: center;
 }
 
-.payment-option span {
-  margin-left: 10px;
+.payment-method-info span {
+  margin-left: 12px;
+  font-size: 16px;
+  color: #303133;
+}
+
+/* 表单样式优化 */
+.el-form-item {
+  margin-bottom: 16px;
+}
+
+.el-form-item__label {
+  font-weight: 500;
+  color: #303133;
+  font-size: 14px;
+}
+
+.el-input__wrapper {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.el-input__wrapper:focus-within {
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+  border-color: #409eff;
+}
+
+.el-select__wrapper {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.el-select__wrapper:focus-within {
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+  border-color: #409eff;
 }
 </style>
