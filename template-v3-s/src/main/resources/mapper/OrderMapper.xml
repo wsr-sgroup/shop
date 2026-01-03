@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.platform.mapper.OrderMapper">
+    <!-- 基本列 -->
+    <sql id="orderColumns">
+        id, order_no, user_id, address_id, total_amount, discount_amount, shipping_fee, final_amount,
+        payment_method, payment_status, payment_time, payment_transaction_id, order_status, shipping_method,
+        shipping_tracking_no, shipped_time, received_time, closed_time, cancel_reason, buyer_note, admin_note,
+        invoice_needed, invoice_title, created_at, updated_at
+    </sql>
+
+    <!-- 分页查询 -->
+    <select id="queryPage" resultType="com.project.platform.entity.Order">
+        SELECT <include refid="orderColumns"/> FROM orders
+        <include refid="queryConditions"/>
+        ORDER BY orders.created_at DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <!-- 统计总数 -->
+    <select id="queryCount" resultType="int">
+        SELECT count(orders.id) FROM orders
+        <include refid="queryConditions"/>
+    </select>
+
+    <!-- 查询条件 -->
+    <sql id="queryConditions">
+        <where>
+            <if test="query.orderNo != null and query.orderNo.trim() != ''">
+                AND orders.order_no LIKE CONCAT('%', #{query.orderNo}, '%')
+            </if>
+            <if test="query.userId != null">
+                AND orders.user_id = #{query.userId}
+            </if>
+            <if test="query.orderStatus != null and query.orderStatus.trim() != ''">
+                AND orders.order_status = #{query.orderStatus}
+            </if>
+            <if test="query.paymentStatus != null">
+                AND orders.payment_status = #{query.paymentStatus}
+            </if>
+            <if test="query.startDate != null">
+                AND orders.created_at >= #{query.startDate}
+            </if>
+            <if test="query.endDate != null">
+                AND orders.created_at &lt;= #{query.endDate}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 插入订单 -->
+    <insert id="insert" parameterType="com.project.platform.entity.Order" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO orders
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="orderNo != null">order_no,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="addressId != null">address_id,</if>
+            <if test="totalAmount != null">total_amount,</if>
+            <if test="discountAmount != null">discount_amount,</if>
+            <if test="shippingFee != null">shipping_fee,</if>
+            <if test="finalAmount != null">final_amount,</if>
+            <if test="paymentMethod != null">payment_method,</if>
+            <if test="paymentStatus != null">payment_status,</if>
+            <if test="paymentTime != null">payment_time,</if>
+            <if test="paymentTransactionId != null">payment_transaction_id,</if>
+            <if test="orderStatus != null">order_status,</if>
+            <if test="shippingMethod != null">shipping_method,</if>
+            <if test="shippingTrackingNo != null">shipping_tracking_no,</if>
+            <if test="shippedTime != null">shipped_time,</if>
+            <if test="receivedTime != null">received_time,</if>
+            <if test="closedTime != null">closed_time,</if>
+            <if test="cancelReason != null">cancel_reason,</if>
+            <if test="buyerNote != null">buyer_note,</if>
+            <if test="adminNote != null">admin_note,</if>
+            <if test="invoiceNeeded != null">invoice_needed,</if>
+            <if test="invoiceTitle != null">invoice_title,</if>
+        </trim>
+        VALUES
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="orderNo != null">#{orderNo},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="addressId != null">#{addressId},</if>
+            <if test="totalAmount != null">#{totalAmount},</if>
+            <if test="discountAmount != null">#{discountAmount},</if>
+            <if test="shippingFee != null">#{shippingFee},</if>
+            <if test="finalAmount != null">#{finalAmount},</if>
+            <if test="paymentMethod != null">#{paymentMethod},</if>
+            <if test="paymentStatus != null">#{paymentStatus},</if>
+            <if test="paymentTime != null">#{paymentTime},</if>
+            <if test="paymentTransactionId != null">#{paymentTransactionId},</if>
+            <if test="orderStatus != null">#{orderStatus},</if>
+            <if test="shippingMethod != null">#{shippingMethod},</if>
+            <if test="shippingTrackingNo != null">#{shippingTrackingNo},</if>
+            <if test="shippedTime != null">#{shippedTime},</if>
+            <if test="receivedTime != null">#{receivedTime},</if>
+            <if test="closedTime != null">#{closedTime},</if>
+            <if test="cancelReason != null">#{cancelReason},</if>
+            <if test="buyerNote != null">#{buyerNote},</if>
+            <if test="adminNote != null">#{adminNote},</if>
+            <if test="invoiceNeeded != null">#{invoiceNeeded},</if>
+            <if test="invoiceTitle != null">#{invoiceTitle},</if>
+        </trim>
+    </insert>
+
+    <!-- 更新订单 -->
+    <update id="updateById" parameterType="com.project.platform.entity.Order">
+        UPDATE orders
+        <set>
+            <if test="orderNo != null">order_no = #{orderNo},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="addressId != null">address_id = #{addressId},</if>
+            <if test="totalAmount != null">total_amount = #{totalAmount},</if>
+            <if test="discountAmount != null">discount_amount = #{discountAmount},</if>
+            <if test="shippingFee != null">shipping_fee = #{shippingFee},</if>
+            <if test="finalAmount != null">final_amount = #{finalAmount},</if>
+            <if test="paymentMethod != null">payment_method = #{paymentMethod},</if>
+            <if test="paymentStatus != null">payment_status = #{paymentStatus},</if>
+            <if test="paymentTime != null">payment_time = #{paymentTime},</if>
+            <if test="paymentTransactionId != null">payment_transaction_id = #{paymentTransactionId},</if>
+            <if test="orderStatus != null">order_status = #{orderStatus},</if>
+            <if test="shippingMethod != null">shipping_method = #{shippingMethod},</if>
+            <if test="shippingTrackingNo != null">shipping_tracking_no = #{shippingTrackingNo},</if>
+            <if test="shippedTime != null">shipped_time = #{shippedTime},</if>
+            <if test="receivedTime != null">received_time = #{receivedTime},</if>
+            <if test="closedTime != null">closed_time = #{closedTime},</if>
+            <if test="cancelReason != null">cancel_reason = #{cancelReason},</if>
+            <if test="buyerNote != null">buyer_note = #{buyerNote},</if>
+            <if test="adminNote != null">admin_note = #{adminNote},</if>
+            <if test="invoiceNeeded != null">invoice_needed = #{invoiceNeeded},</if>
+            <if test="invoiceTitle != null">invoice_title = #{invoiceTitle},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除订单 -->
+    <delete id="deleteById">
+        DELETE FROM orders WHERE id = #{id}
+    </delete>
+
+    <!-- 根据订单编号更新订单状态 -->
+    <update id="updateOrderStatusByOrderNo">
+        UPDATE orders SET order_status = #{orderStatus} WHERE order_no = #{orderNo}
+    </update>
+</mapper>

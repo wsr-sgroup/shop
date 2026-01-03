@@ -1,0 +1,21 @@
+{
+  "addressId": 69,
+  "paymentMethod": "alipay",
+  "buyerNote": "请尽快发货",
+  "invoiceNeeded": 1,
+  "invoiceTitle": "个人",
+  "orderItems": [
+    {
+      "productId": 1001,
+      "quantity": 1,
+      "unitPrice": 12999.00,
+      "productSpec": "黑色"
+    },
+    {
+      "productId": 1005,
+      "quantity": 2,
+      "unitPrice": 699.00,
+      "productSpec": "石墨黑"
+    }
+  ]
+}
