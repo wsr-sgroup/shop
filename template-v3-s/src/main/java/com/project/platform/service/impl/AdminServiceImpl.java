@@ -1,5 +1,14 @@
 package com.project.platform.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import com.alibaba.fastjson2.JSONObject;
 import com.project.platform.dto.CurrentUserDTO;
 import com.project.platform.dto.RetrievePasswordDTO;
@@ -10,14 +19,8 @@ import com.project.platform.mapper.AdminMapper;
 import com.project.platform.service.AdminService;
 import com.project.platform.utils.CurrentUserThreadLocal;
 import com.project.platform.vo.PageVO;
-import jakarta.annotation.Resource;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
+import jakarta.annotation.Resource;
 
 /**
  * <p>
@@ -68,9 +71,20 @@ public class AdminServiceImpl implements AdminService {
     }
 
     private void check(Admin entity) {
+        // 判断用户名是否重复
         Admin admin = adminMapper.selectByUserName(entity.getUsername());
-        if (admin != null && admin.getId() != entity.getId()) {
+        if (admin != null && !Objects.equals(admin.getId(), entity.getId())) {
             throw new CustomException("用户名已存在");
+        }
+        // 判断邮箱是否重复
+        Admin emailAdmin = adminMapper.selectByEmail(entity.getEmail());
+        if (emailAdmin != null && !Objects.equals(emailAdmin.getId(), entity.getId())) {
+            throw new CustomException("邮箱已存在");
+        }
+        // 判断电话是否重复
+        Admin telAdmin = adminMapper.selectByTel(entity.getTel());
+        if (telAdmin != null && !Objects.equals(telAdmin.getId(), entity.getId())) {
+            throw new CustomException("电话已存在");
         }
     }
 
@@ -96,11 +110,38 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public void register(JSONObject data) {
         Admin admin = new Admin();
-        admin.setUsername(data.getString("username"));
-        admin.setNickname(data.getString("nickname"));
-        admin.setAvatarUrl(data.getString("avatarUrl"));
-        admin.setPassword(data.getString("password"));
+        // 确保username不为空
+        String username = data.getString("username");
+        if (username == null || username.trim().isEmpty()) {
+            throw new CustomException("用户名不能为空");
+        }
+        admin.setUsername(username);
+        // 确保password不为空
+        String password = data.getString("password");
+        if (password == null || password.trim().isEmpty()) {
+            throw new CustomException("密码不能为空");
+        }
+        admin.setPassword(password);
+        // 设置默认昵称（使用用户名作为默认昵称）
+        admin.setNickname(username);
+        // 设置默认头像
+        admin.setAvatarUrl("/static/默认头像.webp");
+        // 确保tel不为空
+        String tel = data.getString("phone");
+        if (tel == null || tel.trim().isEmpty()) {
+            throw new CustomException("电话不能为空");
+        }
+        admin.setTel(tel);
+        // 确保email不为空
+        String email = data.getString("email");
+        if (email == null || email.trim().isEmpty()) {
+            throw new CustomException("邮箱不能为空");
+        }
+        admin.setEmail(email);
+        // 设置状态
         admin.setStatus("启用");
+        // 设置创建时间
+        admin.setCreateTime(LocalDateTime.now());
         insert(admin);
     }
 

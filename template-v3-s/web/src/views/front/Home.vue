@@ -281,8 +281,7 @@ const userInfo = ref(JSON.parse(localStorage.getItem('currentUser') || '{}'))
 
 // 跳转到个人中心
 const goToUserCenter = () => {
-  // 个人中心页面需要后续开发
-  ElMessage.info('个人中心功能待实现')
+  router.push('/user/center')
 }
 
 // 退出登录
@@ -301,7 +300,11 @@ onMounted(() => {
 <style scoped>
 .mall-home {
   padding: 20px;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background-image: url('@/assets/主页背景.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   min-height: 100vh;
 }
 

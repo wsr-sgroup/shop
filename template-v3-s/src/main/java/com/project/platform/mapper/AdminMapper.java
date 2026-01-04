@@ -1,12 +1,13 @@
 package com.project.platform.mapper;
 
 
-import com.project.platform.entity.Admin;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
-import java.util.List;
-import java.util.Map;
+import com.project.platform.entity.Admin;
 
 
 public interface AdminMapper {
@@ -31,6 +32,9 @@ public interface AdminMapper {
 
     @Select("SELECT * FROM admin WHERE tel = #{tel}")
     Admin selectByTel(String tel);
+    
+    @Select("SELECT * FROM admin WHERE email = #{email}")
+    Admin selectByEmail(String email);
 }
 
 

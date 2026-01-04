@@ -90,7 +90,11 @@
       <el-card shadow="never">
         <el-row @click="showPaymentPopup = true" class="payment-row">
           <el-col :span="6">支付方式</el-col>
-          <el-col :span="16">{{ currentPaymentMethod.text || '请选择' }}</el-col>
+          <el-col :span="16">
+            <span :style="{ color: !currentPaymentValue ? 'red' : '#606266' }">
+              {{ currentPaymentText || '请选择' }}
+            </span>
+          </el-col>
           <el-col :span="2"><el-icon><Right /></el-icon></el-col>
         </el-row>
       </el-card>
@@ -102,7 +106,7 @@
         type="primary" 
         block 
         @click="submitOrder"
-        :disabled="!selectedAddress.recipient_name || !selectedAddress.recipient_phone || !currentPaymentMethod.value"
+        :disabled="!selectedAddress.recipient_name || !selectedAddress.recipient_phone || !currentPaymentValue"
         size="large"
       >
         付款 ¥{{ actualPayment.toFixed(2) }}
@@ -150,13 +154,12 @@
           v-for="method in paymentMethods" 
           :key="method.value"
           class="payment-method-item"
-          @click="currentPaymentMethod.value = method.value; currentPaymentMethod.text = method.text"
         >
           <div class="payment-method-info">
             <el-icon :size="24" :color="method.color"><component :is="method.icon" /></el-icon>
             <span>{{ method.text }}</span>
           </div>
-          <el-radio v-model="currentPaymentMethod.value" :label="method.value"></el-radio>
+          <el-radio v-model="currentPaymentValue" :label="method.value"></el-radio>
         </div>
       </div>
       <template #footer>
@@ -197,7 +200,7 @@ const selectedAddress = ref({
 
 // 支付方式相关数据
 const showPaymentPopup = ref(false)
-const currentPaymentMethod = ref({ value: '', text: '' })
+const currentPaymentValue = ref('')
 
 // 支付方式列表
 const paymentMethods = ref([
@@ -205,6 +208,12 @@ const paymentMethods = ref([
   { value: 'alipay', text: '支付宝', icon: User, color: '#1677ff' },
   { value: 'balance', text: '余额支付', icon: Setting, color: '#ff9800' }
 ])
+
+// 获取当前支付方式的文本
+const currentPaymentText = computed(() => {
+  const method = paymentMethods.value.find(m => m.value === currentPaymentValue.value)
+  return method ? method.text : ''
+})
 
 // 订单相关数据
 const orderItems = ref([])
@@ -284,7 +293,7 @@ const submitOrder = async () => {
   }
   
   // 验证支付方式
-  if (!currentPaymentMethod.value.value) {
+  if (!currentPaymentValue.value) {
     ElMessage.warning('请选择支付方式')
     return
   }
@@ -302,7 +311,7 @@ const submitOrder = async () => {
     // 构造订单数据
     const orderData = {
       addressId: selectedAddress.value.id || 0, // 使用默认地址ID或0
-      paymentMethod: currentPaymentMethod.value.value,
+      paymentMethod: currentPaymentValue.value, // 确保获取的是字符串值，而不是RefImpl对象
       buyerNote: '',
       invoiceNeeded: 0,
       orderItems: orderItems.value.map(item => ({
@@ -320,7 +329,7 @@ const submitOrder = async () => {
     
     console.log('订单创建响应:', res)
     
-    if (res && res.success) {
+    if (res && res.code === 200) {
       ElMessage.success('订单创建成功，正在跳转到订单中心')
       // 跳转到用户订单界面
       router.push('/user/center')
@@ -385,30 +394,71 @@ const fetchAddresses = async () => {
 const initOrderItems = () => {
   console.log('初始化订单项')
   
-  // 从sessionStorage获取订单商品信息
-  const orderItemsStr = sessionStorage.getItem('orderItems')
+  // 检查URL参数中是否有商品信息（立即购买场景）
+  const productId = route.query.productId
+  const quantity = route.query.quantity
   
-  if (orderItemsStr) {
-    try {
-      orderItems.value = JSON.parse(orderItemsStr)
-      console.log('从sessionStorage获取订单商品信息:', orderItems.value)
-      
-      // 生成10到50元之间的随机运费
-      shippingFee.value = parseFloat((Math.random() * (50 - 10) + 10).toFixed(2))
-      console.log('生成的随机运费:', shippingFee.value)
-      
-      // 优惠券金额固定为0
-      coupon.value = 0
-      console.log('优惠券金额:', coupon.value)
-    } catch (error) {
-      console.error('解析订单商品信息失败:', error)
-      ElMessage.error('获取订单商品信息失败')
-      // 使用模拟数据
+  if (productId && quantity) {
+    // 立即购买场景：根据URL参数创建订单商品
+    console.log('从URL参数获取商品信息:', productId, quantity)
+    
+    // 调用API获取商品详情
+    http.get(`/product/${productId}`).then(res => {
+      if (res && res.code === 200 && res.data) {
+        const product = res.data
+        // 创建订单商品
+        orderItems.value = [{
+          id: 1,
+          productId: parseInt(productId),
+          productName: product.name,
+          productImage: product.mainImage || '@/assets/default-product.jpg',
+          unitPrice: product.price,
+          quantity: parseInt(quantity)
+        }]
+        
+        // 生成10到50元之间的随机运费
+        shippingFee.value = parseFloat((Math.random() * (50 - 10) + 10).toFixed(2))
+        console.log('生成的随机运费:', shippingFee.value)
+        
+        // 优惠券金额固定为0
+        coupon.value = 0
+        console.log('优惠券金额:', coupon.value)
+      } else {
+        console.error('获取商品详情失败:', res)
+        ElMessage.error('获取商品详情失败')
+        useMockData()
+      }
+    }).catch(error => {
+      console.error('获取商品详情出错:', error)
+      ElMessage.error('获取商品详情出错')
+      useMockData()
+    })
+  } else {
+    // 从sessionStorage获取订单商品信息（购物车结算场景）
+    const orderItemsStr = sessionStorage.getItem('orderItems')
+    
+    if (orderItemsStr) {
+      try {
+        orderItems.value = JSON.parse(orderItemsStr)
+        console.log('从sessionStorage获取订单商品信息:', orderItems.value)
+        
+        // 生成10到50元之间的随机运费
+        shippingFee.value = parseFloat((Math.random() * (50 - 10) + 10).toFixed(2))
+        console.log('生成的随机运费:', shippingFee.value)
+        
+        // 优惠券金额固定为0
+        coupon.value = 0
+        console.log('优惠券金额:', coupon.value)
+      } catch (error) {
+        console.error('解析订单商品信息失败:', error)
+        ElMessage.error('获取订单商品信息失败')
+        // 使用模拟数据
+        useMockData()
+      }
+    } else {
+      console.log('sessionStorage中没有订单商品信息，使用模拟数据')
       useMockData()
     }
-  } else {
-    console.log('sessionStorage中没有订单商品信息，使用模拟数据')
-    useMockData()
   }
 }
 
@@ -589,9 +639,10 @@ onMounted(() => {
 .payment-method .el-card {
   margin: 0 16px;
   border-radius: 12px;
-  background: white;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  border: 2px solid #2196f3;
 }
 
 .payment-row {

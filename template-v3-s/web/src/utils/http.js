@@ -23,25 +23,45 @@ http.interceptors.request.use(config => {
 
 // 响应拦截器
 http.interceptors.response.use(response => {
-    return response.data;
+    const responseData = response.data;
+    // 如果是200，返回数据，否则视为错误
+    if (responseData.code === 200) {
+        return responseData;
+    } else {
+        // 非200状态码，视为错误
+        const errorMsg = responseData.msg || "请求失败";
+        ElMessage({message: errorMsg, type: "error"});
+        return Promise.reject(new Error(errorMsg));
+    }
 }, error => {
-    switch (error.response.status) {
+    const status = error.response?.status;
+    const errorData = error.response?.data;
+    let errorMsg = "未知错误";
+    
+    switch (status) {
         case 401:
             localStorage.removeItem("token");
-            ElMessage({message: "请先登录", type: "error"});
+            errorMsg = "请先登录";
+            ElMessage({message: errorMsg, type: "error"});
             router.push("/login");
             break;
         case 409:
-            ElMessage({message: error.response.data.data || error.response.data.msg || "请求冲突", type: "error"});
+            errorMsg = errorData.data || errorData.msg || "请求冲突";
+            ElMessage({message: errorMsg, type: "error"});
             break;
         case 404:
-            ElMessage({message: "接口未找到", type: "error"});
+            errorMsg = "接口未找到";
+            ElMessage({message: errorMsg, type: "error"});
             break;
         case 500:
-            ElMessage({message: "服务异常", type: "error"});
+            errorMsg = "服务异常";
+            ElMessage({message: errorMsg, type: "error"});
             break;
+        default:
+            errorMsg = (errorData && errorData.msg) || error.message || "请求失败";
+            ElMessage({message: errorMsg, type: "error"});
     }
-    return Promise.reject(error);
+    return Promise.reject(new Error(errorMsg));
 });
 // 打印环境变量
 console.log("环境:", import.meta.env.NODE_ENV);

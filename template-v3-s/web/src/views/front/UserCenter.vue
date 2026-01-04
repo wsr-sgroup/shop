@@ -53,53 +53,55 @@
           @click="viewOrderDetail(order.id)"
         >
           <div class="order-header">
-            <span class="order-id">订单号: {{ order.order_number }}</span>
-            <span :class="`order-status status-${order.order_status}`">
-              {{ getOrderStatusText(order.order_status) }}
+            <span class="order-id">订单号: {{ order.orderNo }}</span>
+            <span :class="`order-status status-${order.orderStatus}`">
+              {{ getOrderStatusText(order.orderStatus) }}
             </span>
           </div>
           <div class="order-items">
             <div 
-              v-for="item in order.order_items" 
+              v-for="item in order.orderItems" 
               :key="item.id" 
               class="order-item"
             >
               <img 
-                :src="item.product_image || '@/assets/default-product.jpg'" 
+                :src="item.productImage || '@/assets/default-product.jpg'" 
                 class="item-image"
               />
               <div class="item-info">
-                <div class="item-name">{{ item.product_name }}</div>
+                <div class="item-name">{{ item.productName }}</div>
                 <div class="item-quantity">x{{ item.quantity }}</div>
               </div>
             </div>
           </div>
           <div class="order-footer">
             <div class="order-total">
-              总计: <span class="total-price">¥{{ order.final_amount }}</span>
+              总计: <span class="total-price">¥{{ order.finalAmount }}</span>
             </div>
             <div class="order-actions">
+              <!-- 由于订单创建时已设置为已支付，这里默认不显示支付按钮 -->
               <el-button 
-                v-if="order.order_status === 'pending'" 
+                v-if="false" 
                 type="primary" 
                 size="small"
                 @click.stop="payOrder(order.id)"
               >
                 立即支付
               </el-button>
+              <!-- 仅在订单待发货状态下显示取消订单按钮 -->
               <el-button 
-                v-if="order.order_status === 'pending'" 
+                v-if="order.orderStatus === 'pending'" 
                 type="danger" 
                 size="small"
-                @click.stop="cancelOrder(order.id)"
+                @click.stop="cancelOrder(order.orderNo)"
               >
                 取消订单
               </el-button>
               <el-button 
-                v-if="order.order_status === 'paid'" 
+                v-if="order.orderStatus === 'shipped'" 
                 type="success" 
                 size="small"
-                @click.stop="confirmReceipt(order.id)"
+                @click.stop="confirmReceipt(order.orderNo)"
               >
                 确认收货
               </el-button>
@@ -147,8 +149,9 @@ const getRecentOrders = () => {
       pageSize: 5
     }
   }).then(res => {
-    if (res && res.success) {
-      orders.value = res.data.records
+    if (res && res.code === 200) {
+      console.log('订单列表数据:', res.data.list)
+      orders.value = res.data.list
     } else {
       ElMessage.error('获取订单列表失败')
     }
@@ -188,7 +191,7 @@ const payOrder = (orderId) => {
     orderNo: orderId, 
     paymentMethod: 'online' 
   }).then(res => {
-    if (res && res.success) {
+    if (res && res.code === 200) {
       ElMessage.success('支付成功')
       getRecentOrders() // 刷新订单列表
     } else {
@@ -203,7 +206,7 @@ const payOrder = (orderId) => {
 // 取消订单
 const cancelOrder = (orderId) => {
   http.post(`/order/cancel/${orderId}`).then(res => {
-    if (res && res.success) {
+    if (res && res.code === 200) {
       ElMessage.success('订单已取消')
       getRecentOrders() // 刷新订单列表
     } else {
@@ -218,7 +221,7 @@ const cancelOrder = (orderId) => {
 // 确认收货
 const confirmReceipt = (orderId) => {
   http.post(`/order/confirmReceipt/${orderId}`).then(res => {
-    if (res && res.success) {
+    if (res && res.code === 200) {
       ElMessage.success('已确认收货')
       getRecentOrders() // 刷新订单列表
     } else {
@@ -239,11 +242,10 @@ const editUserInfo = () => {
 // 获取订单状态文本
 const getOrderStatusText = (status) => {
   const statusMap = {
-    'pending': '待支付',
-    'paid': '已支付',
+    'pending': '待发货',
     'shipped': '已发货',
-    'delivered': '已送达',
-    'completed': '已完成',
+    'received': '已收货',
+    'closed': '已关闭',
     'cancelled': '已取消'
   }
   return statusMap[status] || '未知状态'
@@ -313,7 +315,7 @@ const getOrderStatusText = (status) => {
 
 .menu-icon {
   font-size: 48px;
-  color: #fa709a;
+  color: #1989fa;
   margin-bottom: 10px;
 }
 
@@ -327,7 +329,7 @@ const getOrderStatusText = (status) => {
   font-size: 20px;
   margin-bottom: 20px;
   color: #333;
-  background: linear-gradient(90deg, #fa709a 0%, #fee140 100%);
+  background: linear-gradient(90deg, #1989fa 0%, #fee140 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

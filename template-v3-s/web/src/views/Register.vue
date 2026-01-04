@@ -11,8 +11,7 @@
         </el-space>
         <el-form :model="formData" label-width="80px" :rules="rules" ref="formRef" style="width: 100%" >
           <el-form-item label="头像" prop="avatarUrl"
-                        style="width: 100%"
-                        :rules="[{required:true,message:'请选择头像',trigger:[ 'blur','change']}]">
+                        style="width: 100%">
             <MyUpLoad type="imageCard" :limit="1" :files="formData.avatarUrl"
 
                       @setFiles="formData.avatarUrl =$event"></MyUpLoad>
@@ -104,6 +103,13 @@ const rules = ref({
   password: [
     {required: true, message: '请输入密码', trigger: 'blur'},
   ],
+  phone: [
+    {required: true, message: '请输入电话', trigger: ['blur', 'change']},
+  ],
+  email: [
+    {required: true, message: '请输入邮箱', trigger: ['blur', 'change']},
+    {type: 'email', message: '请输入有效的邮箱地址', trigger: ['blur', 'change']}
+  ],
 });
 
 const submitForm = () => {
@@ -111,13 +117,22 @@ const submitForm = () => {
     if (!valid) {
       return
     }
-    http.put("/common/register", formData.value).then(res => {
-      ElMessage({
-        message: "注册成功，正在跳转",
-        type: "success"
+    http.put("/common/register", formData.value)
+      .then(res => {
+        console.log("注册成功响应:", res);
+        ElMessage({
+          message: "注册成功，正在跳转",
+          type: "success"
+        });
+        router.push("/login")
+      })
+      .catch(error => {
+        console.error("注册失败:", error);
+        ElMessage({
+          message: "注册失败: " + (error.message || "未知错误"),
+          type: "error"
+        });
       });
-      router.push("/login")
-    });
   });
 }
 

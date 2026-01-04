@@ -54,7 +54,10 @@ public interface UserMapper {
      * @return
      */
     @Select("SELECT id, username, password_hash, avatar_url as avatarUrl, phone, email, is_active, is_admin, last_login, created_at, updated_at FROM users WHERE phone =#{phone}")
-    User selectByTel(String phone);
+    User selectByPhone(String phone);
+    
+    @Select("SELECT id, username, password_hash, avatar_url as avatarUrl, phone, email, is_active, is_admin, last_login, created_at, updated_at FROM users WHERE email =#{email}")
+    User selectByEmail(String email);
 
     /**
      * 新增

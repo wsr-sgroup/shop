@@ -68,11 +68,32 @@ public class UserServiceImpl implements UserService {
     @Override
     public void register(JSONObject date) {
         User user = new User();
-        user.setUsername(date.getString("username"));
-        user.setPasswordHash(date.getString("password"));
-        user.setAvatarUrl(date.getString("avatarUrl"));
-        user.setPhone(date.getString("phone"));
-        user.setEmail(date.getString("email"));
+        // 确保username不为空
+        String username = date.getString("username");
+        if (username == null || username.trim().isEmpty()) {
+            throw new CustomException("用户名不能为空");
+        }
+        user.setUsername(username);
+        // 确保password不为空
+        String password = date.getString("password");
+        if (password == null || password.trim().isEmpty()) {
+            throw new CustomException("密码不能为空");
+        }
+        user.setPasswordHash(password);
+        // 设置默认头像
+        user.setAvatarUrl("/static/默认头像.webp");
+        // 确保phone不为空
+        String phone = date.getString("phone");
+        if (phone == null || phone.trim().isEmpty()) {
+            throw new CustomException("电话不能为空");
+        }
+        user.setPhone(phone);
+        // 确保email不为空
+        String email = date.getString("email");
+        if (email == null || email.trim().isEmpty()) {
+            throw new CustomException("邮箱不能为空");
+        }
+        user.setEmail(email);
         // 设置状态
         user.setIsActive(1);
         user.setIsAdmin(0);
@@ -118,7 +139,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void retrievePassword(RetrievePasswordDTO retrievePasswordDTO) {
         // 忘记密码
-        User user = userMapper.selectByTel(retrievePasswordDTO.getTel());
+        User user = userMapper.selectByPhone(retrievePasswordDTO.getTel());
         if (user == null) {
             throw new CustomException("手机号不存在");
         }
@@ -207,6 +228,16 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.selectByUsername(entity.getUsername());
         if (user != null && !Objects.equals(user.getId(), entity.getId())) {
             throw new CustomException("用户名已存在");
+        }
+        // 判断邮箱是否重复
+        User emailUser = userMapper.selectByEmail(entity.getEmail());
+        if (emailUser != null && !Objects.equals(emailUser.getId(), entity.getId())) {
+            throw new CustomException("邮箱已存在");
+        }
+        // 判断电话是否重复
+        User phoneUser = userMapper.selectByPhone(entity.getPhone());
+        if (phoneUser != null && !Objects.equals(phoneUser.getId(), entity.getId())) {
+            throw new CustomException("电话已存在");
         }
     }
 

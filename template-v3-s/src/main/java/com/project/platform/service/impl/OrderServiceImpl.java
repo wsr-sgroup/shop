@@ -172,7 +172,7 @@ public class OrderServiceImpl implements OrderService {
         order.setFinalAmount(totalAmount); // 实付金额 = 商品总金额 - 优惠金额 + 运费
         
         // 初始化订单状态
-        order.setPaymentStatus(0); // 0 = 待支付
+        order.setPaymentStatus(1); // 1 = 已支付
         order.setOrderStatus("pending"); // pending = 待发货
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
