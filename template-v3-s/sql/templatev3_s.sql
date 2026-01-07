@@ -15,6 +15,7 @@
 */
 
 SET NAMES utf8mb4;  -- 字符集
+USE templatev3_s;
 SET FOREIGN_KEY_CHECKS = 0; -- 关闭外键约束检查
 
 -- ----------------------------
@@ -314,7 +315,7 @@ INSERT INTO `categories` (name, slug, parent_id, description, sort_order, is_vis
 
 -- 商品表测试数据
 INSERT INTO `products` (sku, name, subtitle, description, price, original_price, cost_price, stock, stock_low_threshold, main_image, image_gallery, specifications, series, model, cpu, gpu, ram, storage, screen_size, weight, is_on_sale, is_featured, is_hot, sales_count, view_count, rating_avg, review_count, created_at, updated_at) VALUES 
-('PROD001', 'iPhone 15 Pro', '苹果最新款手机', 'iPhone 15 Pro，配备A17 Pro芯片，6.1英寸超视网膜XDR显示屏', 7999.00, 8999.00, 6500.00, 50, 10, 'http://localhost:1000/product/iphone15pro.jpg', '["http://localhost:1000/product/iphone15pro1.jpg", "http://localhost:1000/product/iphone15pro2.jpg"]', '{"color": "深空灰", "storage": "128GB"}', 'iPhone', 'iPhone 15 Pro', 'A17 Pro', '集成GPU', '6GB', '128GB', 6.1, 0.20, 1, 1, 1, 150, 1200, 4.8, 85, '2024-12-01 10:00:00', '2024-12-20 10:00:00'),
+('PROD001', 'iPhone 15 Pro', '苹果最新款手机', 'iPhone 15 Pro，配备A17 Pro芯片，6.1英寸超视网膜XDR显示屏', 7999.00, 8999.00, 6500.00, 50, 10, 'http://localhost:1000/uploads/product/主机.jpg', '["http://localhost:1000/uploads/product/主机.jpg", "http://localhost:1000/uploads/product/r9000p.jpg"]', '{"color": "深空灰", "storage": "128GB"}', 'iPhone', 'iPhone 15 Pro', 'A17 Pro', '集成GPU', '6GB', '128GB', 6.1, 0.20, 1, 1, 1, 150, 1200, 4.8, 85, '2024-12-01 10:00:00', '2024-12-20 10:00:00'),
 ('PROD002', 'MacBook Pro 14', '苹果专业笔记本电脑', 'MacBook Pro 14英寸，M3芯片，18GB内存，512GB SSD', 18999.00, 19999.00, 16000.00, 20, 5, 'http://localhost:1000/product/macbookpro14.jpg', '["http://localhost:1000/product/macbookpro141.jpg", "http://localhost:1000/product/macbookpro142.jpg"]', '{"color": "银色", "processor": "M3"}', 'MacBook Pro', 'MacBook Pro 14', 'M3', 'M3集成图形处理器', '18GB', '512GB', 14.2, 1.51, 1, 1, 0, 45, 800, 4.9, 32, '2024-12-02 10:00:00', '2024-12-21 10:00:00'),
 ('PROD003', 'Nike Air Max', '男士运动鞋', 'Nike Air Max 270，舒适缓震，适合日常穿着和运动', 899.00, 1099.00, 400.00, 100, 20, 'http://localhost:1000/product/nikeairmax.jpg', '["http://localhost:1000/product/nikeairmax1.jpg", "http://localhost:1000/product/nikeairmax2.jpg"]', '{"size": "42", "color": "黑色"}', 'Air Max', 'Air Max 270', NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, 1, 200, 1500, 4.7, 120, '2024-12-03 10:00:00', '2024-12-22 10:00:00'),
 ('PROD004', '华为MateBook X Pro', '华为旗舰笔记本电脑', '华为MateBook X Pro，2024款，i7处理器，16GB内存，1TB SSD', 12999.00, 13999.00, 10000.00, 15, 5, 'http://localhost:1000/product/matebookxpro.jpg', '["http://localhost:1000/product/matebookxpro1.jpg", "http://localhost:1000/product/matebookxpro2.jpg"]', '{"color": "深空灰", "processor": "i7-1260P"}', 'MateBook', 'MateBook X Pro', 'i7-1260P', 'Intel Iris Xe', '16GB', '1TB', 14.0, 1.25, 1, 0, 1, 80, 600, 4.6, 45, '2024-12-04 10:00:00', '2024-12-23 10:00:00'),

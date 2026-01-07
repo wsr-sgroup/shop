@@ -29,6 +29,20 @@
            </el-icon>
            <span>普通用户</span>
         </el-menu-item>
+        
+        <el-menu-item index="/admin/product" >   <!--v-if="currentUser.type==='ADMIN'"-->
+           <el-icon>
+              <Goods/>
+           </el-icon>
+           <span>商品管理</span>
+        </el-menu-item>
+        
+        <el-menu-item index="/admin/order" >   <!--v-if="currentUser.type==='ADMIN'"-->
+           <el-icon>
+              <List/>
+           </el-icon>
+           <span>订单管理</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>

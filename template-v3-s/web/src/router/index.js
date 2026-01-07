@@ -48,7 +48,13 @@ function getRoutes() {
                     name: 'AdminProduct',
                     component: () => import('@/views/admin/ProductManage.vue'),
                     meta: { title: '商品管理' }
-                }
+                },
+                {
+                    path: '/admin/order',
+                    name: 'AdminOrder',
+                    component: () => import('@/views/admin/OrderManage.vue'),
+                    meta: { title: '订单管理' }
+                },
             ]
         },
         {
