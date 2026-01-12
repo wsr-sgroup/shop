@@ -58,6 +58,9 @@ import {ElMessage} from 'element-plus';
 import http from "@/utils/http.js";
 import {User, Lock} from "@element-plus/icons-vue";
 import router from "@/router/index.js";
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
 
 const formData = ref({
   username: '',
@@ -88,10 +91,19 @@ const submitForm = () => {
       http.get("/common/currentUser").then(res1 => {
         let currentUser = res1.data;
         localStorage.setItem("currentUser", JSON.stringify(currentUser));
-        if (currentUser.type === "USER") {
-          router.push({path: "/"})
+        
+        // 检查是否有重定向参数
+        const redirect = route.query.redirect
+        if (redirect) {
+          // 跳转到原目标页面
+          router.push(redirect)
         } else {
-          router.push({path: "/admin"})
+          // 根据用户类型跳转
+          if (currentUser.type === "USER") {
+            router.push({path: "/"})
+          } else {
+            router.push({path: "/admin"})
+          }
         }
       })
     })

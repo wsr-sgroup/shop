@@ -163,20 +163,17 @@ const getRecentOrders = () => {
 
 // 跳转到订单列表
 const goToOrders = () => {
-  // 这里可以跳转到专门的订单列表页面
-  ElMessage.info('功能开发中')
+  router.push('/my-orders')
 }
 
 // 跳转到地址管理
 const goToAddresses = () => {
-  // 这里可以跳转到专门的地址管理页面
-  ElMessage.info('功能开发中')
+  router.push('/address-manage')
 }
 
 // 跳转到账户设置
 const goToSettings = () => {
-  // 这里可以跳转到专门的账户设置页面
-  ElMessage.info('功能开发中')
+  router.push('/account-settings')
 }
 
 // 查看订单详情
@@ -235,8 +232,7 @@ const confirmReceipt = (orderId) => {
 
 // 编辑用户信息
 const editUserInfo = () => {
-  // 这里可以跳转到编辑资料页面
-  ElMessage.info('功能开发中')
+  router.push('/edit-profile')
 }
 
 // 获取订单状态文本

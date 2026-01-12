@@ -502,84 +502,174 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 结算页主容器 - 炫彩流动背景 */
 .checkout-page {
-  padding-bottom: 120px;
-  background-color: #f5f7fa;
+  padding: 30px;
+  padding-bottom: 140px;
+  background: linear-gradient(135deg, 
+    #fa709a 0%, 
+    #40fef1 25%, 
+    #ffdde1 50%, 
+    #feca57 75%, 
+    #fa709a 100%);
+  background-size: 400% 400%;
+  animation: checkoutGradient 25s ease infinite;
   min-height: 100vh;
 }
 
-/* 区块标题 */
+@keyframes checkoutGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 区块标题 - 彩虹渐变 */
 .section-title {
-  font-size: 18px;
-  font-weight: bold;
-  color: #303133;
-  margin: 20px 16px 12px;
+  font-size: 22px;
+  font-weight: 800;
+  background: linear-gradient(90deg, 
+    #fa709a 0%, 
+    #fee140 50%, 
+    #ff6b6b 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 25px 20px 15px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  animation: titleSlide 2s ease-in-out infinite;
+}
+
+@keyframes titleSlide {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(5px); }
 }
 
 /* 收货地址区块 */
 .address-section {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
+/* 地址卡片 - 玻璃拟态 */
 .address-card {
-  margin: 0 16px;
-  border-radius: 12px;
-  background: white;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  margin: 0 20px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15),
+              0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+  border: 2px solid rgba(255, 255, 255, 0.5);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.4s ease;
+  position: relative;
+}
+
+.address-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(250, 112, 154, 0.1), 
+    transparent);
+  transition: left 0.6s;
+}
+
+.address-card:hover::before {
+  left: 100%;
 }
 
 .address-card:hover {
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25),
+              0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+  transform: translateY(-5px);
 }
 
 /* 商品列表区块 */
 .goods-section {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
-.goods-section .section-title {
-  color: #303133;
-}
-
+/* 商品卡片 - 玻璃拟态 */
 .product-card {
-  margin: 0 16px 12px;
-  border-radius: 12px;
-  background: white;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  margin: 0 20px 15px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12),
+              0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+  border: 2px solid rgba(255, 255, 255, 0.5);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.4s ease;
+  position: relative;
+}
+
+.product-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, 
+    #fa709a 0%, 
+    #fee140 50%, 
+    #ff6b6b 100%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.product-card:hover::after {
+  opacity: 1;
 }
 
 .product-card:hover {
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
+  box-shadow: 0 15px 50px rgba(250, 112, 154, 0.25),
+              0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+  transform: translateY(-3px) translateX(3px);
 }
 
 .card-header {
   display: flex;
   align-items: center;
+  padding: 15px;
 }
 
+/* 商品缩略图 - 彩色边框 */
 .product-thumb {
-  width: 80px;
-  height: 80px;
+  width: 90px;
+  height: 90px;
   object-fit: cover;
-  border-radius: 8px;
-  margin-right: 12px;
+  border-radius: 12px;
+  margin-right: 15px;
+  border: 3px solid transparent;
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(135deg, #fa709a, #fee140, #ff6b6b) border-box;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.product-thumb:hover {
+  transform: scale(1.1) rotate(3deg);
+  box-shadow: 0 12px 30px rgba(250, 112, 154, 0.3);
 }
 
 .product-info {
   flex: 1;
 }
 
+/* 商品标题 - 渐变文字 */
 .product-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: #303133;
-  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0 0 10px 0;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -588,132 +678,255 @@ onMounted(() => {
   -webkit-box-orient: vertical;
 }
 
+/* 商品价格 - 炫彩渐变 */
 .product-price {
-  font-size: 16px;
-  font-weight: bold;
-  color: #f56c6c;
+  font-size: 18px;
+  font-weight: 900;
+  background: linear-gradient(135deg, 
+    #ff6b6b 0%, 
+    #ff8e53 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .card-body {
   text-align: right;
   color: #606266;
   font-size: 14px;
+  padding: 0 15px 15px;
+  font-weight: 600;
 }
 
 /* 订单金额区块 */
 .order-summary {
-  margin-bottom: 20px;
-}
-
-.order-summary .section-title {
-  color: #303133;
+  margin-bottom: 25px;
 }
 
 .order-summary .el-card {
-  margin: 0 16px;
-  border-radius: 12px;
-  background: white;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  margin: 0 20px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15),
+              0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+  border: 2px solid rgba(255, 255, 255, 0.5);
   overflow: hidden;
 }
 
+/* 总金额 - 金色闪耀 */
 .total-amount {
-  font-weight: bold;
-  font-size: 18px;
-  color: #f56c6c;
-  background: linear-gradient(135deg, #f56c6c, #ff8f8f);
+  font-weight: 900;
+  font-size: 22px;
+  background: linear-gradient(135deg, 
+    #ff6b6b 0%, 
+    #ff8e53 25%, 
+    #ffd93d 50%, 
+    #ff8e53 75%, 
+    #ff6b6b 100%);
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: amountShine 3s linear infinite;
+}
+
+@keyframes amountShine {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
 }
 
 /* 支付方式区块 */
 .payment-method {
-  margin-bottom: 20px;
-}
-
-.payment-method .section-title {
-  color: #303133;
+  margin-bottom: 25px;
 }
 
 .payment-method .el-card {
-  margin: 0 16px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  margin: 0 20px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, 
+    rgba(250, 112, 154, 0.15) 0%, 
+    rgba(254, 225, 64, 0.15) 100%);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 40px rgba(250, 112, 154, 0.2),
+              0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+  border: 2px solid rgba(250, 112, 154, 0.3);
   overflow: hidden;
-  border: 2px solid #2196f3;
+  transition: all 0.3s ease;
+}
+
+.payment-method .el-card:hover {
+  box-shadow: 0 15px 50px rgba(250, 112, 154, 0.3);
+  transform: translateY(-2px);
 }
 
 .payment-row {
   cursor: pointer;
   transition: all 0.3s ease;
-  padding: 12px 0;
+  padding: 15px 0;
+  border-radius: 10px;
 }
 
 .payment-row:hover {
-  background-color: rgba(64, 158, 255, 0.05);
+  background: linear-gradient(90deg, 
+    rgba(250, 112, 154, 0.1) 0%, 
+    rgba(254, 225, 64, 0.1) 100%);
+  transform: translateX(5px);
 }
 
-/* 付款按钮 */
+/* 付款按钮栏 - 玻璃拟态 */
 .submit-order {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 16px;
-  background: white;
-  box-shadow: 0 -4px 16px 0 rgba(0, 0, 0, 0.1);
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30px);
+  box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.2),
+              0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
+  border-top: 2px solid rgba(255, 255, 255, 0.5);
   z-index: 1000;
+  animation: submitSlideUp 0.5s ease-out;
 }
 
+@keyframes submitSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 付款按钮 - 多彩渐变 */
 .submit-order .el-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, 
+    #fa709a 0%, 
+    #fee140 33%, 
+    #ff6b6b 66%, 
+    #feca57 100%) !important;
+  background-size: 200% auto;
   border: none;
-  height: 48px;
-  font-size: 16px;
-  font-weight: bold;
-  border-radius: 24px;
-  transition: all 0.3s ease;
+  height: 56px;
+  font-size: 18px;
+  font-weight: 900;
+  border-radius: 28px;
+  transition: all 0.4s ease;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  box-shadow: 0 10px 30px rgba(250, 112, 154, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.submit-order .el-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.4), 
+    transparent);
+  transition: left 0.6s;
+}
+
+.submit-order .el-button:hover::before {
+  left: 100%;
 }
 
 .submit-order .el-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px 0 rgba(102, 126, 234, 0.4);
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(250, 112, 154, 0.7);
+  background-position: right center;
 }
 
 .submit-order .el-button:active {
-  transform: translateY(0);
+  transform: translateY(-2px) scale(1);
+}
+
+.submit-order .el-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* 支付方式弹窗 */
 .payment-methods {
-  padding: 16px;
+  padding: 20px;
 }
 
+/* 支付方式选项 - 渐变卡片 */
 .payment-method-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  border-radius: 12px;
-  background: white;
-  margin-bottom: 12px;
+  padding: 20px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.9) 0%, 
+    rgba(240, 242, 245, 0.9) 100%);
+  margin-bottom: 15px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s ease;
   border: 2px solid transparent;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.payment-method-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, 
+    #fa709a 0%, 
+    #fee140 50%, 
+    #ff6b6b 100%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.payment-method-item:hover::before {
+  opacity: 1;
 }
 
 .payment-method-item:hover {
-  background-color: rgba(64, 158, 255, 0.05);
-  border-color: rgba(64, 158, 255, 0.2);
+  background: linear-gradient(135deg, 
+    rgba(250, 112, 154, 0.08) 0%, 
+    rgba(254, 225, 64, 0.08) 100%);
+  border-color: rgba(250, 112, 154, 0.3);
+  transform: translateX(5px);
+  box-shadow: 0 8px 25px rgba(250, 112, 154, 0.2);
 }
 
 .payment-method-item.active {
-  background-color: rgba(64, 158, 255, 0.1);
-  border-color: #409eff;
+  background: linear-gradient(135deg, 
+    rgba(250, 112, 154, 0.15) 0%, 
+    rgba(254, 225, 64, 0.15) 100%);
+  border: 2px solid transparent;
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  background-image: linear-gradient(135deg, 
+                    rgba(250, 112, 154, 0.15) 0%, 
+                    rgba(254, 225, 64, 0.15) 100%),
+                    linear-gradient(135deg, #fa709a, #fee140);
+  box-shadow: 0 10px 30px rgba(250, 112, 154, 0.3);
+}
+
+.payment-method-item.active::before {
+  opacity: 1;
 }
 
 .payment-method-info {
@@ -722,39 +935,91 @@ onMounted(() => {
 }
 
 .payment-method-info span {
-  margin-left: 12px;
+  margin-left: 15px;
   font-size: 16px;
+  font-weight: 600;
   color: #303133;
 }
 
 /* 表单样式优化 */
 .el-form-item {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .el-form-item__label {
-  font-weight: 500;
-  color: #303133;
-  font-size: 14px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 15px;
 }
 
+/* 输入框美化 */
 .el-input__wrapper {
-  border-radius: 8px;
+  border-radius: 12px;
   transition: all 0.3s ease;
+  border: 2px solid rgba(250, 112, 154, 0.2);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.el-input__wrapper:hover {
+  border-color: rgba(250, 112, 154, 0.4);
+  background: rgba(255, 255, 255, 1);
 }
 
 .el-input__wrapper:focus-within {
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
-  border-color: #409eff;
+  box-shadow: 0 0 0 3px rgba(250, 112, 154, 0.15);
+  border-color: #fa709a;
+  background: rgba(255, 255, 255, 1);
 }
 
 .el-select__wrapper {
-  border-radius: 8px;
+  border-radius: 12px;
   transition: all 0.3s ease;
+  border: 2px solid rgba(250, 112, 154, 0.2);
+}
+
+.el-select__wrapper:hover {
+  border-color: rgba(250, 112, 154, 0.4);
 }
 
 .el-select__wrapper:focus-within {
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
-  border-color: #409eff;
+  box-shadow: 0 0 0 3px rgba(250, 112, 154, 0.15);
+  border-color: #fa709a;
+}
+
+/* 文本域美化 */
+:deep(.el-textarea__inner) {
+  border-radius: 12px;
+  border: 2px solid rgba(102, 126, 234, 0.2);
+  background: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+}
+
+:deep(.el-textarea__inner):hover {
+  border-color: rgba(250, 112, 154, 0.4);
+  background: rgba(255, 255, 255, 1);
+}
+
+:deep(.el-textarea__inner):focus {
+  box-shadow: 0 0 0 3px rgba(250, 112, 154, 0.15);
+  border-color: #fa709a;
+  background: rgba(255, 255, 255, 1);
+}
+
+/* 描述列表美化 */
+:deep(.el-descriptions__label) {
+  background: linear-gradient(135deg, 
+    rgba(250, 112, 154, 0.1) 0%, 
+    rgba(254, 225, 64, 0.1) 100%) !important;
+  font-weight: 700;
+  color: #fa709a !important;
+}
+
+:deep(.el-descriptions__content) {
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: #333;
+  font-weight: 500;
 }
 </style>

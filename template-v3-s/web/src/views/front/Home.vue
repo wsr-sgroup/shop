@@ -86,7 +86,7 @@
         >
           <el-card :body-style="{ padding: '0px' }" @click="viewProductDetail(product)" class="product-card">
             <img 
-              :src="product.image || '@/assets/default-product.jpg'" 
+              :src="product.mainImage || '@/assets/default-product.jpg'" 
               class="product-image" 
               :alt="product.name"
             />
@@ -152,28 +152,28 @@ const productList = ref([
     name: '联想ThinkPad X1 Carbon 2023',
     price: '12999.00',
     description: '轻薄商务本，碳纤维材质',
-    image: ''
+    mainImage: ''
   },
   {
     id: 2,
     name: '联想拯救者Y7000P 2023',
     price: '9999.00',
     description: '游戏本，高性能配置',
-    image: ''
+    mainImage: ''
   },
   {
     id: 3,
     name: '联想小新Pro14 2023',
     price: '5999.00',
     description: '轻薄办公本，高性价比',
-    image: ''
+    mainImage: ''
   },
   {
     id: 4,
     name: '联想YOGA 14s 2023',
     price: '7999.00',
     description: '翻转触控屏，创意设计本',
-    image: ''
+    mainImage: ''
   }
 ])
 
@@ -298,131 +298,488 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 主页容器 - 保留背景图片 */
 .mall-home {
-  padding: 20px;
+  padding: 30px;
   background-image: url('@/assets/主页背景.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
   min-height: 100vh;
+  position: relative;
 }
 
+/* 添加多彩叠加层 */
+.mall-home::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(250, 112, 154, 0.1) 0%, 
+    rgba(254, 225, 64, 0.1) 25%, 
+    rgba(255, 107, 107, 0.1) 50%, 
+    rgba(254, 202, 87, 0.1) 75%, 
+    rgba(250, 112, 154, 0.1) 100%);
+  background-size: 400% 400%;
+  animation: overlayFlow 20s ease infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes overlayFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 确保内容在叠加层之上 */
+.mall-home > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* 头部导航 - 玻璃拟态 */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding: 20px;
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 10px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
+  margin-bottom: 25px;
+  padding: 25px 30px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30px);
+  border-radius: 20px;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15),
+              0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.4s ease;
 }
 
+.header:hover {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2),
+              0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+  transform: translateY(-3px);
+}
+
+/* Logo区域 */
 .logo {
   display: flex;
   align-items: center;
+  gap: 15px;
 }
 
 .logo img {
-  width: 50px;
-  height: 50px;
-  margin-right: 15px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(135deg, #fa709a, #fee140, #ff6b6b) border-box;
+  box-shadow: 0 8px 20px rgba(250, 112, 154, 0.3);
+  transition: all 0.4s ease;
+}
+
+.logo img:hover {
+  transform: rotate(360deg) scale(1.1);
+  box-shadow: 0 12px 30px rgba(250, 112, 154, 0.5);
 }
 
 .logo h1 {
-  font-size: 24px;
-  color: #333;
+  font-size: 28px;
+  font-weight: 900;
+  background: linear-gradient(135deg, 
+    #fa709a 0%, 
+    #fee140 50%, 
+    #ff6b6b 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
+  animation: logoFloat 3s ease-in-out infinite;
 }
 
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* 搜索栏 */
 .search-bar {
   flex: 1;
-  margin: 0 30px;
+  margin: 0 40px;
 }
 
+.search-bar :deep(.el-input__wrapper) {
+  border-radius: 25px;
+  border: 2px solid rgba(250, 112, 154, 0.3);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 15px rgba(250, 112, 154, 0.1);
+  transition: all 0.3s ease;
+}
+
+.search-bar :deep(.el-input__wrapper):hover {
+  border-color: rgba(250, 112, 154, 0.5);
+  box-shadow: 0 6px 20px rgba(250, 112, 154, 0.2);
+}
+
+.search-bar :deep(.el-input__wrapper.is-focus) {
+  border-color: #fa709a;
+  box-shadow: 0 0 0 3px rgba(250, 112, 154, 0.15);
+}
+
+.search-bar :deep(.el-input-group__append) {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  border: none;
+  border-radius: 0 25px 25px 0;
+}
+
+.search-bar :deep(.el-input-group__append .el-button) {
+  background: transparent;
+  border: none;
+  color: white;
+}
+
+/* 用户操作区 */
 .user-actions {
   display: flex;
-  gap: 10px;
+  gap: 15px;
+  align-items: center;
 }
 
+.user-actions :deep(.el-button) {
+  border-radius: 20px;
+  font-weight: 700;
+  padding: 12px 24px;
+  transition: all 0.3s ease;
+}
+
+.user-actions :deep(.el-button--primary) {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  border: none;
+  box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4);
+}
+
+.user-actions :deep(.el-button--primary):hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(250, 112, 154, 0.6);
+}
+
+.user-actions :deep(.el-button:not(.el-button--primary)) {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(250, 112, 154, 0.3);
+  color: #fa709a;
+  font-weight: 700;
+}
+
+.user-actions :deep(.el-button:not(.el-button--primary)):hover {
+  background: rgba(250, 112, 154, 0.1);
+  border-color: #fa709a;
+  transform: translateY(-2px);
+}
+
+/* 用户下拉菜单 */
+.el-dropdown-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(250, 112, 154, 0.3);
+  font-weight: 700;
+  color: #fa709a;
+  transition: all 0.3s ease;
+}
+
+.el-dropdown-link:hover {
+  background: rgba(250, 112, 154, 0.1);
+  border-color: #fa709a;
+  transform: translateY(-2px);
+}
+
+/* 分类标签栏 - 玻璃拟态 */
 .categories {
-  margin-bottom: 20px;
-  background-color: rgba(255, 255, 255, 0.9);
-  padding: 10px 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
+  margin-bottom: 25px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30px);
+  padding: 15px 25px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12),
+              0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.categories:hover {
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.18);
+  transform: translateY(-2px);
 }
 
 .categories :deep(.el-tabs__item) {
-  font-weight: bold;
+  font-weight: 700;
+  font-size: 15px;
+  color: #666;
+  transition: all 0.3s ease;
+  padding: 0 20px;
+}
+
+.categories :deep(.el-tabs__item:hover) {
+  color: #fa709a;
+  transform: translateY(-2px);
 }
 
 .categories :deep(.el-tabs__item.is-active) {
-  color: #409eff !important;
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 900;
 }
 
+.categories :deep(.el-tabs__active-bar) {
+  background: linear-gradient(90deg, #fa709a 0%, #fee140 100%);
+  height: 3px;
+  border-radius: 2px;
+}
+
+.categories :deep(.el-tabs__nav-wrap::after) {
+  background: linear-gradient(90deg, 
+    rgba(250, 112, 154, 0.2) 0%, 
+    rgba(254, 225, 64, 0.2) 100%);
+}
+
+/* 商品列表 */
 .product-list {
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 .product-item {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
+/* 商品卡片 - 玻璃拟态 */
 .product-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.4s ease;
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: 20px;
   overflow: hidden;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12),
+              0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+  position: relative;
+}
+
+.product-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, 
+    #fa709a 0%, 
+    #fee140 50%, 
+    #ff6b6b 100%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.product-card:hover::before {
+  opacity: 1;
 }
 
 .product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 20px 60px rgba(250, 112, 154, 0.3),
+              0 0 0 1px rgba(255, 255, 255, 0.5) inset;
 }
 
+/* 商品图片 */
 .product-image {
   width: 100%;
-  height: 200px;
+  height: 220px;
   object-fit: cover;
   cursor: pointer;
+  transition: all 0.4s ease;
+  position: relative;
 }
 
+.product-card:hover .product-image {
+  transform: scale(1.05);
+}
+
+/* 商品名称 */
 .product-name {
-  font-weight: bold;
-  font-size: 16px;
+  font-weight: 800;
+  font-size: 17px;
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #333 0%, #667eea 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: all 0.3s ease;
 }
 
+.product-card:hover .product-name {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 商品价格 */
 .product-price {
-  color: #ff6600;
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 10px;
+  font-size: 22px;
+  font-weight: 900;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, 
+    #ff6b6b 0%, 
+    #ff8e53 50%, 
+    #ffd93d 100%);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: priceShimmer 3s linear infinite;
 }
 
+@keyframes priceShimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* 商品描述 */
 .product-description {
-  color: #999;
+  color: #666;
   font-size: 14px;
   margin-bottom: 15px;
   height: 40px;
   overflow: hidden;
+  line-height: 1.5;
 }
 
+/* 加入购物车按钮 */
 .bottom {
   text-align: center;
+  padding: 10px 0;
 }
 
+.bottom :deep(.el-button) {
+  width: 100%;
+  border-radius: 15px;
+  font-weight: 700;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  border: none;
+  box-shadow: 0 4px 15px rgba(250, 112, 154, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.bottom :deep(.el-button::before) {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.3), 
+    transparent);
+  transition: left 0.5s;
+}
+
+.bottom :deep(.el-button:hover::before) {
+  left: 100%;
+}
+
+.bottom :deep(.el-button:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(250, 112, 154, 0.5);
+}
+
+/* 分页器 - 玻璃拟态 */
 .pagination {
   display: flex;
   justify-content: center;
-  background-color: rgba(255, 255, 255, 0.9);
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30px);
+  padding: 25px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12),
+              0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.pagination :deep(.el-pagination) {
+  font-weight: 600;
+}
+
+.pagination :deep(.el-pager li) {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  margin: 0 3px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.pagination :deep(.el-pager li:hover) {
+  background: linear-gradient(135deg, 
+    rgba(250, 112, 154, 0.2) 0%, 
+    rgba(254, 225, 64, 0.2) 100%);
+  transform: translateY(-2px);
+}
+
+.pagination :deep(.el-pager li.is-active) {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4);
+}
+
+.pagination :deep(.btn-prev),
+.pagination :deep(.btn-next) {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.pagination :deep(.btn-prev):hover,
+.pagination :deep(.btn-next):hover {
+  background: linear-gradient(135deg, 
+    rgba(250, 112, 154, 0.2) 0%, 
+    rgba(254, 225, 64, 0.2) 100%);
+  transform: translateY(-2px);
+}
+
+/* 下拉菜单美化 */
+:deep(.el-dropdown-menu) {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+:deep(.el-dropdown-menu__item) {
+  color: #333;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+:deep(.el-dropdown-menu__item:hover) {
+  background: linear-gradient(135deg, 
+    rgba(250, 112, 154, 0.1) 0%, 
+    rgba(254, 225, 64, 0.1) 100%);
+  color: #fa709a;
 }
 </style>

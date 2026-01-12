@@ -98,20 +98,12 @@ import router from "@/router/index.js";
 import {ElMessage} from "element-plus";
 import {useRoute} from 'vue-router';
 import {HomeOutlined} from "@ant-design/icons-vue";
-import {User} from '@element-plus/icons-vue'
+import {User, Goods, List} from '@element-plus/icons-vue'
 import "@/styles/admin.css";
 
 const isUserLogin = ref(tools.isLogin())
 const currentUser = ref(tools.getCurrentUser())
 const activeIndex = ref(useRoute().path)
-
-//目前可以通过改网址强制进入管理员页面，后期需取消注释
-// if (currentUser.value === null) {
-//   window.location.href = "/login"
-// }
-// if (currentUser.value && currentUser.value.type === 'USER') {
-//   router.push({path: "/"})
-// }
 
 function handleMenuSelect(key, keyPath) {
   activeIndex.value = key

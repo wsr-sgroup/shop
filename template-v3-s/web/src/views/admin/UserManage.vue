@@ -6,12 +6,12 @@
         <el-input v-model="searchForm.username" placeholder="请输入用户名" aria-label="用户名"></el-input>
       </el-form-item>
       <el-form-item label="电话">
-        <el-input v-model="searchForm.tel" placeholder="请输入电话" aria-label="电话"></el-input>
+        <el-input v-model="searchForm.phone" placeholder="请输入电话" aria-label="电话"></el-input>
       </el-form-item>
       <el-form-item label="状态">
-        <el-select v-model="searchForm.status" placeholder="请选择状态" clearable aria-label="状态">
-          <el-option label="启用" value="1"></el-option>
-          <el-option label="禁用" value="0"></el-option>
+        <el-select v-model="searchForm.isActive" placeholder="请选择状态" clearable aria-label="状态">
+          <el-option label="启用" :value="1"></el-option>
+          <el-option label="禁用" :value="0"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -29,10 +29,16 @@
     <el-table :data="listData" border stripe>
       <el-table-column prop="id" label="ID" width="80"></el-table-column>
       <el-table-column prop="username" label="用户名"></el-table-column>
-      <el-table-column prop="tel" label="电话"></el-table-column>
+      <el-table-column prop="phone" label="电话"></el-table-column>
       <el-table-column prop="email" label="邮箱"></el-table-column>
-      <el-table-column prop="balance" label="余额"></el-table-column>
-      <el-table-column prop="createTime" label="创建时间"></el-table-column>
+      <el-table-column label="状态">
+        <template #default="scope">
+          <el-tag :type="scope.row.isActive === 1 ? 'success' : 'danger'">
+            {{ scope.row.isActive === 1 ? '启用' : '禁用' }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="createdAt" label="创建时间"></el-table-column>
       <el-table-column label="操作" width="200">
         <template #default="scope">
           <el-button size="small" @click="handleEdit(scope.row)">编辑</el-button>
@@ -60,18 +66,18 @@
         <el-form-item label="用户名" prop="username">
           <el-input v-model="editForm.username" placeholder="请输入用户名"></el-input>
         </el-form-item>
-        <el-form-item label="电话" prop="tel">
-          <el-input v-model="editForm.tel" placeholder="请输入电话"></el-input>
+        <el-form-item label="电话" prop="phone">
+          <el-input v-model="editForm.phone" placeholder="请输入电话"></el-input>
         </el-form-item>
         <el-form-item label="邮箱" prop="email">
           <el-input v-model="editForm.email" placeholder="请输入邮箱"></el-input>
         </el-form-item>
-        <el-form-item label="余额" prop="balance">
-          <el-input-number v-model="editForm.balance" :min="0" controls-position="right"></el-input-number>
+        <el-form-item label="密码" prop="passwordHash" v-if="!isEdit">
+          <el-input v-model="editForm.passwordHash" type="password" placeholder="请输入密码"></el-input>
         </el-form-item>
-        <el-form-item label="状态" prop="status">
+        <el-form-item label="状态" prop="isActive">
           <el-switch 
-            v-model="editForm.status" 
+            v-model="editForm.isActive" 
             :active-value="1" 
             :inactive-value="0"
             active-text="启用" 
@@ -97,8 +103,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
     //搜索条件
     const searchForm = ref({
         username:undefined,
-        tel:undefined,
-        status:undefined
+        phone:undefined,
+        isActive:undefined
     })
 
     const pageInfo = ref({
@@ -110,7 +116,6 @@ import { ElMessage, ElMessageBox } from 'element-plus'
         total:0
     })
 
-    //getPageList()   与后端对接后取消注释
     function getPageList(){
         //向后端发起请求，携带参数：分页参数+搜索参数
         request.get('/user/page',{
@@ -123,12 +128,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
         })
     }
 
-    const listData = ref([
-        {
-            username:'张三',
-            nickname:'张三'
-        }
-    ])
+    const listData = ref([])
 
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
@@ -138,17 +138,17 @@ const formRef = ref(null)
 const editForm = ref({
   id: undefined,
   username: '',
-  tel: '',
+  phone: '',
   email: '',
-  balance: 0,
-  status: 1
+  passwordHash: '',
+  isActive: 1
 })
 
 const formRules = {
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' }
   ],
-  tel: [
+  phone: [
     { required: true, message: '请输入电话', trigger: 'blur' }
   ],
   email: [
@@ -161,8 +161,8 @@ const formRules = {
 function resetSearch() {
   searchForm.value = {
     username: undefined,
-    tel: undefined,
-    status: undefined
+    phone: undefined,
+    isActive: undefined
   }
   getPageList()
 }
@@ -185,10 +185,10 @@ function handleAdd() {
   editForm.value = {
     id: undefined,
     username: '',
-    tel: '',
+    phone: '',
     email: '',
-    balance: 0,
-    status: 1
+    passwordHash: '',
+    isActive: 1
   }
   dialogVisible.value = true
 }
@@ -206,15 +206,14 @@ function handleEdit(row) {
 function saveUser() {
   formRef.value.validate((valid) => {
     if (valid) {
-      const url = isEdit.value ? '/user/update' : '/user/create'
-      request.post(url, editForm.value).then(res => {
-        if (res.code === 200) {
-          ElMessage.success(`${isEdit.value ? '编辑' : '新增'}成功`)
-          dialogVisible.value = false
-          getPageList()
-        } else {
-          ElMessage.error(res.msg || `${isEdit.value ? '编辑' : '新增'}失败`)
-        }
+      const method = isEdit.value ? 'put' : 'post'
+      const url = isEdit.value ? '/user/update' : '/user/add'
+      request[method](url, editForm.value).then(res => {
+        ElMessage.success(`${isEdit.value ? '编辑' : '新增'}成功`)
+        dialogVisible.value = false
+        getPageList()
+      }).catch(err => {
+        ElMessage.error(err.message || `${isEdit.value ? '编辑' : '新增'}失败`)
       })
     }
   })
@@ -227,13 +226,13 @@ function handleDelete(row) {
     cancelButtonText: '取消',
     type: 'warning'
   }).then(() => {
-    request.delete(`/user/delete/${row.id}`).then(res => {
-      if (res.code === 200) {
-        ElMessage.success('删除成功')
-        getPageList()
-      } else {
-        ElMessage.error(res.msg || '删除失败')
-      }
+    request.delete(`/user/delBatch`, {
+      data: [row.id]
+    }).then(res => {
+      ElMessage.success('删除成功')
+      getPageList()
+    }).catch(err => {
+      ElMessage.error(err.message || '删除失败')
     })
   }).catch(() => {
     // 用户取消删除
@@ -241,7 +240,7 @@ function handleDelete(row) {
 }
 
 // 初始化加载数据
-//getPageList()
+getPageList()
 </script>
 
 <style scoped>
