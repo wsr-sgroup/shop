@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.platform.mapper.CategoryMapper">
+
+    <resultMap id="BaseResultMap" type="com.project.platform.entity.Category">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="slug" jdbcType="VARCHAR" property="slug" />
+        <result column="parent_id" jdbcType="INTEGER" property="parentId" />
+        <result column="description" jdbcType="VARCHAR" property="description" />
+        <result column="sort_order" jdbcType="INTEGER" property="sortOrder" />
+        <result column="is_visible" jdbcType="BIT" property="isVisible" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, name, slug, parent_id, description, 
+        sort_order, is_visible
+    </sql>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM categories
+        WHERE 1=1
+        <if test="name != null and name != ''">
+            AND name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        <if test="slug != null and slug != ''">
+            AND slug = #{slug}
+        </if>
+        <if test="parentId != null">
+            AND parent_id = #{parentId}
+        </if>
+        ORDER BY sort_order ASC, id ASC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="count" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM categories
+        WHERE 1=1
+        <if test="name != null and name != ''">
+            AND name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        <if test="slug != null and slug != ''">
+            AND slug = #{slug}
+        </if>
+        <if test="parentId != null">
+            AND parent_id = #{parentId}
+        </if>
+    </select>
+
+    <select id="selectBySlug" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM categories
+        WHERE slug = #{slug}
+    </select>
+
+</mapper>

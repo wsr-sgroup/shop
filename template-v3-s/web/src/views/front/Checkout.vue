@@ -311,14 +311,14 @@ const submitOrder = async () => {
     // 构造订单数据
     const orderData = {
       addressId: selectedAddress.value.id || 0, // 使用默认地址ID或0
-      paymentMethod: currentPaymentValue.value, // 确保获取的是字符串值，而不是RefImpl对象
+      paymentMethod: currentPaymentValue.value, // 获取ref的值
       buyerNote: '',
       invoiceNeeded: 0,
       orderItems: orderItems.value.map(item => ({
         productId: parseInt(item.productId),
         quantity: parseInt(item.quantity),
         unitPrice: parseFloat(item.unitPrice),
-        productSpec: ''
+        productSpec: item.productSpec || ''
       }))
     }
     

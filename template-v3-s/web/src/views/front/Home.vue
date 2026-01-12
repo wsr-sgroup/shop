@@ -47,33 +47,30 @@
     </div>
 
     <div class="categories">
-      <el-tabs v-model="activeCategory" @tab-change="handleCategoryChange">
-        <el-tab-pane label="全部商品" name="all">
-          <template #label>
-            <span><el-icon><Goods /></el-icon> 全部商品</span>
-          </template>
-        </el-tab-pane>
-        <el-tab-pane label="ThinkPad系列" name="thinkpad">
-          <template #label>
-            <span><el-icon><Monitor /></el-icon> ThinkPad系列</span>
-          </template>
-        </el-tab-pane>
-        <el-tab-pane label="拯救者系列" name="legion">
-          <template #label>
-            <span><el-icon><SetUp /></el-icon> 拯救者系列</span>
-          </template>
-        </el-tab-pane>
-        <el-tab-pane label="小新系列" name="xiaoxin">
-          <template #label>
-            <span><el-icon><OfficeBuilding /></el-icon> 小新系列</span>
-          </template>
-        </el-tab-pane>
-        <el-tab-pane label="Yoga系列" name="yoga">
-          <template #label>
-            <span><el-icon><Refresh /></el-icon> Yoga系列</span>
-          </template>
-        </el-tab-pane>
-      </el-tabs>
+      <el-scrollbar>
+        <div class="category-nav">
+          <el-tag
+            :type="activeCategory === 'all' ? 'primary' : 'info'"
+            effect="dark"
+            size="large"
+            class="category-item"
+            @click="handleCategoryClick('all')"
+          >
+            全部商品
+          </el-tag>
+          <el-tag
+            v-for="category in categories"
+            :key="category.id"
+            :type="activeCategory === category.slug ? 'primary' : 'info'"
+            effect="dark"
+            size="large"
+            class="category-item"
+            @click="handleCategoryClick(category.slug)"
+          >
+            {{ category.name }}
+          </el-tag>
+        </div>
+      </el-scrollbar>
     </div>
 
     <div class="product-list">
@@ -138,6 +135,9 @@ const searchKeyword = ref('')
 // 当前分类
 const activeCategory = ref('all')
 
+// 分类列表
+const categories = ref([])
+
 // 分页信息
 const pageInfo = ref({
   pageNum: 1,
@@ -183,23 +183,55 @@ const handleSearch = () => {
   getPageList()
 }
 
-// 分类切换处理
-const handleCategoryChange = (category) => {
-  console.log('切换分类:', category)
+// 获取分类列表
+const getCategoryList = () => {
+  http.get('/category/page', {
+    params: {
+      pageNum: 1,
+      pageSize: 100  // 获取所有分类
+    }
+  }).then(res => {
+    if (res && res.code === 200) {
+      categories.value = res.data.list || []
+      console.log('分类列表:', categories.value)
+    } else {
+      ElMessage.error('获取分类列表失败')
+    }
+  }).catch(error => {
+    ElMessage.error('请求分类列表出错')
+    console.error(error)
+  })
+}
+
+// 分类点击处理
+const handleCategoryClick = (category) => {
+  activeCategory.value = category
   pageInfo.value.pageNum = 1
   getPageList()
 }
 
 // 获取商品列表
 const getPageList = () => {
+  let apiPath = '/product/page';
+  let params = {
+    name: searchKeyword.value,
+    pageNum: pageInfo.value.pageNum,
+    pageSize: pageInfo.value.pageSize
+  };
+  
+  if (activeCategory.value !== 'all') {
+    // 如果选择了具体分类，则使用按分类查询的API
+    apiPath = '/product/by-category';
+    params.slug = activeCategory.value;
+    delete params.series; // 移除可能的series参数
+  } else {
+    // 如果是全部商品，则仍按原方式查询
+    params.series = ''; // 清空series参数
+  }
+  
   // 调用后端接口获取商品数据
-  http.get('/product/page', {
-    params: {
-      name: searchKeyword.value,
-      series: activeCategory.value === 'all' ? '' : activeCategory.value,
-      pageNum: pageInfo.value.pageNum,
-      pageSize: pageInfo.value.pageSize
-    }
+  http.get(apiPath, {
+    params: params
   }).then(res => {
     console.log('商品列表响应:', res)
     if (res && res.code === 200) {
@@ -293,6 +325,7 @@ const logout = () => {
 }
 
 onMounted(() => {
+  getCategoryList() // 先获取分类列表
   getPageList()
 })
 </script>
@@ -501,7 +534,7 @@ onMounted(() => {
   transform: translateY(-2px);
 }
 
-/* 分类标签栏 - 玻璃拟态 */
+/* 分类导航栏 - 玻璃拟态 */
 .categories {
   margin-bottom: 25px;
   background: rgba(255, 255, 255, 0.95);
@@ -519,37 +552,44 @@ onMounted(() => {
   transform: translateY(-2px);
 }
 
-.categories :deep(.el-tabs__item) {
-  font-weight: 700;
-  font-size: 15px;
-  color: #666;
+/* 分类导航样式 */
+.category-nav {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 5px;
+}
+
+.category-item {
+  cursor: pointer;
   transition: all 0.3s ease;
-  padding: 0 20px;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 15px;
+  user-select: none;
+  border: none;
 }
 
-.categories :deep(.el-tabs__item:hover) {
-  color: #fa709a;
+.category-item:hover {
   transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(250, 112, 154, 0.3);
 }
 
-.categories :deep(.el-tabs__item.is-active) {
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: 900;
+.category-item:active {
+  transform: translateY(0);
 }
 
-.categories :deep(.el-tabs__active-bar) {
-  background: linear-gradient(90deg, #fa709a 0%, #fee140 100%);
-  height: 3px;
-  border-radius: 2px;
+/* 滚动条样式 */
+.categories :deep(.el-scrollbar__wrap) {
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  padding-bottom: 10px;
 }
 
-.categories :deep(.el-tabs__nav-wrap::after) {
-  background: linear-gradient(90deg, 
-    rgba(250, 112, 154, 0.2) 0%, 
-    rgba(254, 225, 64, 0.2) 100%);
+.categories :deep(.el-scrollbar__view) {
+  display: inline-block;
 }
 
 /* 商品列表 */

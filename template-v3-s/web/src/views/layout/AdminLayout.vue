@@ -43,6 +43,13 @@
            </el-icon>
            <span>订单管理</span>
         </el-menu-item>
+        
+        <el-menu-item index="/admin/category" >   <!--v-if="currentUser.type==='ADMIN'"-->
+           <el-icon>
+              <Folder/>
+           </el-icon>
+           <span>分类管理</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>
@@ -98,7 +105,7 @@ import router from "@/router/index.js";
 import {ElMessage} from "element-plus";
 import {useRoute} from 'vue-router';
 import {HomeOutlined} from "@ant-design/icons-vue";
-import {User, Goods, List} from '@element-plus/icons-vue'
+import {User, Goods, List, Folder} from '@element-plus/icons-vue'
 import "@/styles/admin.css";
 
 const isUserLogin = ref(tools.isLogin())

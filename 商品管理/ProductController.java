@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/product")
@@ -49,25 +48,6 @@ public class ProductController {
     @DeleteMapping("/delBatch")
     public ResponseVO<Integer> deleteBatch(@RequestBody List<Integer> ids) {
         int r = productService.deleteByIds(ids);
-        return ResponseVO.success(r);
-    }
-    
-    @GetMapping("/by-category")
-    public ResponseVO<PageVO<Product>> getByCategory(
-            @RequestParam(required = false) String name,
-            @RequestParam String slug,
-            @RequestParam(defaultValue = "1") int pageNum,
-            @RequestParam(defaultValue = "10") int pageSize) {
-        PageVO<Product> page = productService.getByCategory(name, slug, pageNum, pageSize);
-        return ResponseVO.success(page);
-    }
-    
-    @PutMapping("/batchUpdateSaleStatus")
-    public ResponseVO<Integer> batchUpdateSaleStatus(@RequestBody Map<String, Object> params) {
-        List<Integer> ids = (List<Integer>) params.get("ids");
-        Integer isOnSale = (Integer) params.get("isOnSale");
-        
-        int r = productService.batchUpdateSaleStatus(ids, isOnSale);
         return ResponseVO.success(r);
     }
 }

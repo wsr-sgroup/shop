@@ -6,20 +6,13 @@ spring:
     allow-circular-references: true #允许循环引用
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/templatev3_s?useUnicode=true&useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost:3306/templatev3_s?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai
     username: root
-    password: 123456  #这里注意要改成自己的mysql root用户密码
+    password: lalalala2004
   servlet:
     multipart:
       max-file-size: 100MB # 文件上传大小限制，设置最大值，不能超过该值，否则报错
       max-request-size: 1000MB # 文件最大请求限制，用于批量上传
-    encoding:
-      charset: UTF-8
-      force: true
-  mvc:
-    encoding:
-      charset: UTF-8
-      force: true
 
   jackson: # Jackson库配置
     date-format: "yyyy-MM-dd HH:mm:ss" # 设置日期格式为"年-月-日 时:分:秒"
@@ -28,12 +21,12 @@ spring:
     time-zone: Asia/Shanghai
 mybatis:
   mapper-locations: classpath:mapper/*Mapper.xml
+  type-handlers-package: com.project.platform.typehandler
   configuration:
     map-underscore-to-camel-case: true #启用驼峰命名转换
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 打印SQL到控制台
-logging:
-  level:
-    com.project.platform.mapper: debug # 设置MyBatis Mapper的日志级别为DEBUG以打印SQL语句
+  logging:
+    level: debug # 设置MyBatis的日志级别为DEBUG以打印SQL语句
 resetPassword: 123456
 spring.main.all-circular-references: true
 
@@ -42,3 +35,5 @@ files:
   uploads:
     path: uploads/
     baseUrl: http://localhost:1000/file
+
+

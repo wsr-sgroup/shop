@@ -257,7 +257,7 @@
 <script>
 import MyUpload from '@/components/MyUpload.vue'
 import MyEditor from '@/components/MyEditor.vue'
-import http from '@/utils/http'
+import http from '@/utils/http.js'
 
 export default {
   components: { MyUpload, MyEditor },
@@ -439,6 +439,7 @@ export default {
           this.fetchPage();
         }).catch(error => {
           console.error('批量上架失败:', error);
+          this.$message.error('批量上架失败');
         });
       });
     },
@@ -458,6 +459,7 @@ export default {
           this.fetchPage();
         }).catch(error => {
           console.error('批量下架失败:', error);
+          this.$message.error('批量下架失败');
         });
       });
     },
@@ -515,6 +517,7 @@ export default {
       }).catch(error => {
         console.error('库存调整失败:', error);
         this.$message.error('库存调整失败');
+        this.stockDialogVisible = false;
       });
     }
   }

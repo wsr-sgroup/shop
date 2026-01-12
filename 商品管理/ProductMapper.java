@@ -29,14 +29,4 @@ public interface ProductMapper {
                         @Param("sku") String sku,
                         @Param("series") String series,
                         @Param("isOnSale") Integer isOnSale);
-
-        List<Product> selectByCategory(@Param("name") String name,
-                        @Param("slug") String slug,
-                        @Param("offset") int offset,
-                        @Param("pageSize") int pageSize);
-
-        int countByCategory(@Param("name") String name,
-                        @Param("slug") String slug);
-    
-        int batchUpdateSaleStatus(@Param("ids") List<Integer> ids, @Param("isOnSale") Integer isOnSale);
 }

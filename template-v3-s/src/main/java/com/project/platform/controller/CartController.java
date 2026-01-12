@@ -17,7 +17,7 @@ import com.project.platform.dto.CartItemAddDTO;
 import com.project.platform.dto.CartItemUpdateDTO;
 import com.project.platform.service.CartItemService;
 import com.project.platform.vo.CartItemVO;
-import com.project.platform.vo.ResultVO;
+import com.project.platform.vo.ResponseVO;
 
 /**
  * 购物车接口控制器（对接前端购物车页面）
@@ -36,12 +36,12 @@ public class CartController {
      * 前端调用：GET /api/cart/list?userId=xxx
      */
     @GetMapping("/list")
-    public ResultVO<List<CartItemVO>> getCartList(@RequestParam Integer userId) {
+    public ResponseVO<List<CartItemVO>> getCartList(@RequestParam Integer userId) {
         try {
             List<CartItemVO> cartItemVOList = cartItemService.getCartItemVOListByUserId(userId);
-            return ResultVO.ok(cartItemVOList);
+            return ResponseVO.ok(cartItemVOList);
         } catch (Exception e) {
-            return ResultVO.error("获取购物车列表失败：" + e.getMessage());
+            return ResponseVO.fail(500, "获取购物车列表失败：" + e.getMessage(), null);
         }
     }
 
@@ -50,12 +50,12 @@ public class CartController {
      * 前端调用：PUT /api/cart/updateQuantity
      */
     @PutMapping("/updateQuantity")
-    public ResultVO<Boolean> updateQuantity(@RequestBody CartItemUpdateDTO updateDTO) {
+    public ResponseVO<Boolean> updateQuantity(@RequestBody CartItemUpdateDTO updateDTO) {
         boolean success = cartItemService.updateCartItemQuantity(updateDTO);
         if (success) {
-            return ResultVO.ok(true);
+            return ResponseVO.ok(success);
         }
-        return ResultVO.error("更新失败，库存不足或购物车项不存在");
+        return ResponseVO.fail(500, "更新失败，库存不足或购物车项不存在", null);
     }
 
     /**
@@ -63,15 +63,15 @@ public class CartController {
      * 前端调用：DELETE /api/cart/remove?cartItemId=xxx&userId=xxx
      */
     @DeleteMapping("/remove")
-    public ResultVO<Boolean> removeCartItem(
+    public ResponseVO<Boolean> removeCartItem(
             @RequestParam Integer cartItemId,
             @RequestParam Integer userId
     ) {
         boolean success = cartItemService.removeCartItem(cartItemId, userId);
         if (success) {
-            return ResultVO.ok(true);
+            return ResponseVO.ok(success);
         }
-        return ResultVO.error("删除失败");
+        return ResponseVO.fail(500, "删除失败", null);
     }
 
     /**
@@ -79,15 +79,15 @@ public class CartController {
      * 前端调用：PUT /api/cart/updateSelected
      */
     @PutMapping("/updateSelected")
-    public ResultVO<Boolean> updateSelected(
+    public ResponseVO<Boolean> updateSelected(
             @RequestParam Integer cartItemId,
             @RequestParam boolean selected
     ) {
         boolean success = cartItemService.updateCartItemSelected(cartItemId, selected);
         if (success) {
-            return ResultVO.ok(true);
+            return ResponseVO.ok(success);
         }
-        return ResultVO.error("更新选中状态失败");
+        return ResponseVO.fail(500, "更新选中状态失败", null);
     }
 
     /**
@@ -95,15 +95,15 @@ public class CartController {
      * 前端调用：POST /api/cart/add
      */
     @PostMapping("/add")
-    public ResultVO<Boolean> addCartItem(@RequestBody CartItemAddDTO addDTO) {
+    public ResponseVO<Boolean> addCartItem(@RequestBody CartItemAddDTO addDTO) {
         try {
             boolean success = cartItemService.addCartItem(addDTO.getUserId(), addDTO.getProductId(), addDTO.getQuantity());
             if (success) {
-                return ResultVO.ok(true);
+                return ResponseVO.ok(success);
             }
-            return ResultVO.error("添加失败");
+            return ResponseVO.fail(500, "添加失败", null);
         } catch (Exception e) {
-            return ResultVO.error(e.getMessage());
+            return ResponseVO.fail(500, e.getMessage(), null);
         }
     }
 }

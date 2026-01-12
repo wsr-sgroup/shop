@@ -15,8 +15,4 @@ public interface ProductService {
     int update(Product product);
 
     int deleteByIds(List<Integer> ids);
-
-    PageVO<Product> getByCategory(String name, String slug, int pageNum, int pageSize);
-    
-    int batchUpdateSaleStatus(List<Integer> ids, Integer isOnSale);
 }

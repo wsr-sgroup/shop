@@ -100,34 +100,7 @@
     </where>
   </select>
 
-  <select id="selectByCategory" resultMap="ProductResultMap">
-    SELECT DISTINCT p.* FROM products p
-    JOIN product_category pc ON p.id = pc.product_id
-    JOIN categories c ON pc.category_id = c.id
-    <where>
-      <if test="name != null and name != ''">AND p.name LIKE CONCAT('%',#{name},'%')</if>
-      AND c.slug = #{slug}
-    </where>
-    ORDER BY p.created_at DESC
-    LIMIT #{offset}, #{pageSize}
-  </select>
-
-  <select id="countByCategory" resultType="int">
-    SELECT COUNT(DISTINCT p.id) FROM products p
-    JOIN product_category pc ON p.id = pc.product_id
-    JOIN categories c ON pc.category_id = c.id
-    <where>
-      <if test="name != null and name != ''">AND p.name LIKE CONCAT('%',#{name},'%')</if>
-      AND c.slug = #{slug}
-    </where>
-  </select>
-
-  <update id="batchUpdateSaleStatus" parameterType="map">
-    UPDATE products
-    SET is_on_sale = #{isOnSale}, updated_at = NOW()
-    WHERE id IN
-    <foreach collection="ids" item="id" open="(" separator="," close=")">
-      #{id}
-    </foreach>
-  </update>
 </mapper>
+Content-Type: application/json
+# 如果有登录/鉴权：
+Authorization: Bearer <your-jwt-token>

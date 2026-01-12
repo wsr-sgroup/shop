@@ -9,10 +9,11 @@ import com.project.platform.utils.CurrentUserThreadLocal;
 import com.project.platform.vo.PageVO;
 import com.project.platform.vo.ResponseVO;
 import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.time.format.DateTimeFormatter;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 /**
  * 订单管理控制器
@@ -253,6 +254,10 @@ public class OrderController {
 
     // 将 Order 转换为对外响应的 Map（确保字段类型稳定，兼容 API 测试工具）
     private java.util.Map<String, Object> orderToSafeMap(Order order) {
+        if (order == null) {
+            return null;
+        }
+        
         java.util.Map<String, Object> m = new java.util.HashMap<>();
         java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -270,7 +275,7 @@ public class OrderController {
         // 支付信息
         m.put("paymentMethod", order.getPaymentMethod() == null ? "" : order.getPaymentMethod());
         m.put("paymentStatus", order.getPaymentStatus() == null ? 0 : order.getPaymentStatus());
-        m.put("paymentTime", order.getPaymentTime() == null ? "" : order.getPaymentTime().format(dtf));
+        m.put("paymentTime", order.getPaymentTime() == null ? "" : order.getPaymentTime() != null ? order.getPaymentTime().format(dtf) : "");
         m.put("paymentTransactionId", order.getPaymentTransactionId() == null ? "" : order.getPaymentTransactionId());
 
         // 订单状态
@@ -279,11 +284,11 @@ public class OrderController {
         // 物流信息
         m.put("shippingMethod", order.getShippingMethod() == null ? "" : order.getShippingMethod());
         m.put("shippingTrackingNo", order.getShippingTrackingNo() == null ? "" : order.getShippingTrackingNo());
-        m.put("shippedTime", order.getShippedTime() == null ? "" : order.getShippedTime().format(dtf));
-        m.put("receivedTime", order.getReceivedTime() == null ? "" : order.getReceivedTime().format(dtf));
+        m.put("shippedTime", order.getShippedTime() == null ? "" : order.getShippedTime() != null ? order.getShippedTime().format(dtf) : "");
+        m.put("receivedTime", order.getReceivedTime() == null ? "" : order.getReceivedTime() != null ? order.getReceivedTime().format(dtf) : "");
 
         // 备注信息
-        m.put("closedTime", order.getClosedTime() == null ? "" : order.getClosedTime().format(dtf));
+        m.put("closedTime", order.getClosedTime() == null ? "" : order.getClosedTime() != null ? order.getClosedTime().format(dtf) : "");
         m.put("cancelReason", order.getCancelReason() == null ? "" : order.getCancelReason());
         m.put("buyerNote", order.getBuyerNote() == null ? "" : order.getBuyerNote());
         m.put("adminNote", order.getAdminNote() == null ? "" : order.getAdminNote());
@@ -293,12 +298,17 @@ public class OrderController {
         m.put("invoiceTitle", order.getInvoiceTitle() == null ? "" : order.getInvoiceTitle());
 
         // 时间戳
-        m.put("createdAt", order.getCreatedAt() == null ? "" : order.getCreatedAt().format(dtf));
-        m.put("updatedAt", order.getUpdatedAt() == null ? "" : order.getUpdatedAt().format(dtf));
+        m.put("createdAt", order.getCreatedAt() == null ? "" : order.getCreatedAt() != null ? order.getCreatedAt().format(dtf) : "");
+        m.put("updatedAt", order.getUpdatedAt() == null ? "" : order.getUpdatedAt() != null ? order.getUpdatedAt().format(dtf) : "");
         
         // 订单项信息
-        List<OrderItem> orderItems = orderItemService.selectByOrderNo(order.getOrderNo());
-        m.put("orderItems", orderItems);
+        try {
+            List<OrderItem> orderItems = orderItemService.selectByOrderNo(order.getOrderNo());
+            m.put("orderItems", orderItems);
+        } catch (Exception e) {
+            // 如果查询订单项失败，返回空列表而不是null
+            m.put("orderItems", java.util.Collections.emptyList());
+        }
 
         return m;
     }

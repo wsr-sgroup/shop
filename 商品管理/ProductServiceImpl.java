@@ -60,26 +60,4 @@ public class ProductServiceImpl implements ProductService {
     public int deleteByIds(List<Integer> ids) {
         return productMapper.deleteByIds(ids);
     }
-
-    @Override
-    public PageVO<Product> getByCategory(String name, String slug, int pageNum, int pageSize) {
-        int offset = (Math.max(pageNum, 1) - 1) * pageSize;
-        List<Product> list = productMapper.selectByCategory(name, slug, offset, pageSize);
-        int total = productMapper.countByCategory(name, slug);
-        PageVO<Product> page = new PageVO<>();
-        page.setList(list);
-        page.setTotal(total);
-        page.setPageNum(pageNum);
-        page.setPageSize(pageSize);
-        return page;
-    }
-    
-    @Override
-    @Transactional
-    public int batchUpdateSaleStatus(List<Integer> ids, Integer isOnSale) {
-        if (ids == null || ids.isEmpty()) {
-            return 0;
-        }
-        return productMapper.batchUpdateSaleStatus(ids, isOnSale);
-    }
 }

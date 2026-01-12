@@ -96,14 +96,27 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public CurrentUserDTO login(String username, String password) {
         Admin admin = adminMapper.selectByUserName(username);
-        if (admin == null || !admin.getPassword().equals(password)) {
+        
+        if (admin == null) {
+            System.out.println("登录失败：找不到用户名为 '" + username + "' 的管理员");
             throw new CustomException("用户名或密码错误");
         }
+        
+        System.out.println("找到用户: " + admin.getUsername() + ", 密码: " + admin.getPassword() + ", 输入密码: " + password);
+        
+        if (!admin.getPassword().equals(password)) {
+            System.out.println("登录失败：密码不匹配");
+            throw new CustomException("用户名或密码错误");
+        }
+        
         if (admin.getStatus().equals("禁用")) {
+            System.out.println("登录失败：用户已被禁用");
             throw new CustomException("用户已禁用");
         }
+        
         CurrentUserDTO currentUserDTO = new CurrentUserDTO();
         BeanUtils.copyProperties(admin, currentUserDTO);
+        currentUserDTO.setType("ADMIN"); // 确保设置用户类型
         return currentUserDTO;
     }
 

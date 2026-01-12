@@ -32,7 +32,7 @@
 
     <!-- 操作按钮 -->
     <div style="margin-bottom: 15px;">
-      <el-button type="primary" @click="handleAdd">新增订单</el-button>
+      <!-- 管理员界面通常不需要新增订单功能，因为订单是由用户在前端创建的 -->
     </div>
 
     <!-- 订单表格 -->
@@ -49,10 +49,11 @@
       </el-table-column>
       <el-table-column prop="orderStatus" label="订单状态"></el-table-column>
       <el-table-column prop="createdAt" label="创建时间"></el-table-column>
-      <el-table-column label="操作" width="250">
+      <el-table-column label="操作" width="320">
         <template #default="scope">
           <el-button size="small" @click="handleEdit(scope.row)">编辑</el-button>
           <el-button size="small" type="primary" @click="handleView(scope.row)">查看</el-button>
+          <el-button size="small" type="success" @click="showUpdateStatusDialog(scope.row)">更新状态</el-button>
           <el-button size="small" type="danger" @click="handleDelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
@@ -74,8 +75,8 @@
     <!-- 订单编辑对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="800px">
       <el-form :model="editForm" :rules="formRules" ref="formRef" label-width="100px">
-        <el-form-item label="订单号" prop="orderNo">
-          <el-input v-model="editForm.orderNo" placeholder="请输入订单号" :disabled="isEdit"></el-input>
+        <el-form-item label="订单号">
+          <el-input v-model="editForm.orderNo" placeholder="订单号" :disabled="true"></el-input>
         </el-form-item>
         <el-form-item label="用户ID" prop="userId">
           <el-input v-model="editForm.userId" placeholder="请输入用户ID"></el-input>
@@ -151,12 +152,39 @@
         </span>
       </template>
     </el-dialog>
+    
+    <!-- 订单状态更新对话框 -->
+    <el-dialog v-model="statusDialogVisible" title="更新订单状态" width="500px">
+      <el-form :model="statusForm" label-width="100px">
+        <el-form-item label="订单号">
+          <el-input v-model="statusForm.orderNo" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="当前状态">
+          <el-input v-model="statusForm.currentStatus" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="新状态" prop="newStatus">
+          <el-select v-model="statusForm.newStatus" placeholder="请选择新状态">
+            <el-option label="待发货" value="pending"></el-option>
+            <el-option label="已发货" value="shipped"></el-option>
+            <el-option label="已收货" value="received"></el-option>
+            <el-option label="已关闭" value="closed"></el-option>
+            <el-option label="已取消" value="cancelled"></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="statusDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="updateOrderStatus">确认</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, toRaw } from 'vue'
-import request from '@/utils/http.js'
+import http from '@/utils/http.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 搜索条件
@@ -179,7 +207,7 @@ const pageInfo = ref({
 // getPageList()   与后端对接后取消注释
 function getPageList() {
   // 向后端发起请求，携带参数：分页参数+搜索参数
-  request.get('/order/page', {
+  http.get('/order/page', {
     params: Object.assign(toRaw(searchForm.value), toRaw(pageInfo.value))
   }).then(res => {
     // 获取列表
@@ -204,6 +232,7 @@ const listData = ref([
 
 const dialogVisible = ref(false)
 const detailVisible = ref(false)
+const statusDialogVisible = ref(false)
 const dialogTitle = ref('')
 const isEdit = ref(false)
 const formRef = ref(null)
@@ -219,12 +248,16 @@ const editForm = ref({
   adminNote: ''
 })
 
+const statusForm = ref({
+  orderNo: '',
+  currentStatus: '',
+  newStatus: ''
+})
+
 const orderDetail = ref(null)
 
 const formRules = {
-  orderNo: [
-    { required: true, message: '请输入订单号', trigger: 'blur' }
-  ],
+
   userId: [
     { required: true, message: '请输入用户ID', trigger: 'blur' },
     { type: 'number', message: '用户ID必须为数字', trigger: 'blur' }
@@ -259,22 +292,8 @@ function handleCurrentChange(val) {
   getPageList()
 }
 
-// 处理新增
-function handleAdd() {
-  dialogTitle.value = '新增订单'
-  isEdit.value = false
-  editForm.value = {
-    id: undefined,
-    orderNo: '',
-    userId: undefined,
-    totalAmount: 0,
-    finalAmount: 0,
-    paymentStatus: 0,
-    orderStatus: 'pending',
-    adminNote: ''
-  }
-  dialogVisible.value = true
-}
+// 管理员界面通常不需要新增订单功能
+// 因为订单是由用户在前端创建的，管理员只需处理现有订单
 
 // 处理编辑
 function handleEdit(row) {
@@ -285,10 +304,31 @@ function handleEdit(row) {
   dialogVisible.value = true
 }
 
+// 显示更新状态对话框
+function showUpdateStatusDialog(row) {
+  statusForm.value = {
+    orderNo: row.orderNo,
+    currentStatus: row.orderStatus,
+    newStatus: row.orderStatus
+  }
+  statusDialogVisible.value = true
+}
+
+// 更新订单状态
+function updateOrderStatus() {
+  http.post(`/order/updateStatus/${statusForm.value.orderNo}/${statusForm.value.newStatus}`).then(() => {
+    ElMessage.success('订单状态更新成功');
+    statusDialogVisible.value = false;
+    getPageList(); // 刷新列表
+  }).catch(() => {
+    ElMessage.error('订单状态更新失败');
+  });
+}
+
 // 处理查看
 function handleView(row) {
   // 获取订单详情（包括订单项）
-  request.get(`/order/selectById/${row.id}`).then(res => {
+  http.get(`/order/selectById/${row.id}`).then(res => {
     orderDetail.value = res.data
     detailVisible.value = true
   })
@@ -305,7 +345,7 @@ function handleDelete(row) {
       type: 'warning'
     }
   ).then(() => {
-    request.delete(`/order/delete/${row.id}`).then(() => {
+    http.delete(`/order/delete/${row.id}`).then(() => {
       ElMessage.success('删除成功')
       getPageList()
     }).catch(() => {
@@ -314,18 +354,21 @@ function handleDelete(row) {
   })
 }
 
-// 保存订单
+// 保存订单（仅更新）
 function saveOrder() {
-  const api = isEdit.value ? '/order/update' : '/order/create'
-  const method = isEdit.value ? request.put : request.post
+  // 管理员界面只处理订单更新，不创建新订单
+  if (!isEdit.value) {
+    ElMessage.error('管理员界面不支持创建新订单');
+    return;
+  }
 
-  method(api, editForm.value).then(() => {
-    ElMessage.success(isEdit.value ? '更新成功' : '新增成功')
-    dialogVisible.value = false
-    getPageList()
+  http.put('/order/update', editForm.value).then(() => {
+    ElMessage.success('更新成功');
+    dialogVisible.value = false;
+    getPageList();
   }).catch(() => {
-    ElMessage.error(isEdit.value ? '更新失败' : '新增失败')
-  })
+    ElMessage.error('更新失败');
+  });
 }
 
 // 获取支付状态文本
